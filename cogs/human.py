@@ -286,7 +286,7 @@ class Duel(commands.Cog):
                                 "victim": self.victim,
                                 "amount": int(dmg/2),
                                 "type": ["Bleeding", "🩸"],
-                                "count": 7
+                                "count": 9 
                             })
                         elif repeat == "Burning":
                             for things in self.outer_instance.effects:
@@ -306,7 +306,7 @@ class Duel(commands.Cog):
                                 "victim": self.victim,
                                 "amount": dmg,
                                 "type": ["Burning", "🔥"],
-                                "count": 3
+                                "count": 5
                             })
                     await duel_stats_change(self.victim, dmg , "HP")
                     await duel_stats_change(interaction.user, chakra, "Energy")
@@ -498,9 +498,21 @@ class Duel(commands.Cog):
                     else:
                         users = await get_human_stats()
                         if users[str(ctx.author.id)]["HP"] == 0:
-                            loop = [False, user, ctx.author]
+                            for buttons in [x for x in view3.children if x.custom_id]:
+                                if buttons.pressed:
+                                    final_move = buttons.pressed
+                                    break
+                                else:
+                                    pass
+                            loop = [False, user, ctx.author, final_move]
                         elif users[str(user.id)]["HP"] == 0:
-                            loop = [False, ctx.author, user]
+                            for buttons in [x for x in view2.children if x.custom_id]:
+                                if buttons.pressed:
+                                    final_move = buttons.pressed
+                                    break
+                                else:
+                                    pass
+                            loop = [False, ctx.author, user, final_move]
                         else:
                             for buttons in [x for x in view2.children if x.custom_id]:
                                 if buttons.pressed:
@@ -520,7 +532,7 @@ class Duel(commands.Cog):
 
 
             if loop[0] == False:
-                await ctx.send(f"Congrats {loop[1].mention}! you defeated {loop[2].mention}.")
+                await ctx.send(f"{loop[1].mention} used {loop[3][0]} which lead them to victory against {loop[2].mention}")
 
                 users = await get_human_stats()
                 loser_lvl = int(users[str(loop[2].id)]["Level"])
@@ -644,7 +656,7 @@ class Duel(commands.Cog):
 
 
     @commands.command()
-    async def brawl(self, ctx, npc_name):
+    async def pve(self, ctx, npc_name):
         attributes = await get_all_attributes(npc_name, scroll_data_json_file, Key=["itemname"])
         if attributes != []:
            attributes = attributes 
@@ -653,11 +665,12 @@ class Duel(commands.Cog):
             return
         loop = True
         npc_current_health = None
+        round = 1
         ALL_STUFF = await create_brawl_npc(ctx.author, npc_name)
         while loop is True:
             embed = discord.Embed(
-                title=f"{ctx.author.display_name} vs {attributes[0]}",
-                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost."
+                title=f"{ctx.author.display_name} vs {attributes[0]} [Round {round}]",
+                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost. Sadly Players can not inflict effects to NPCS and so do they."
             )
 
             view2 = View()
@@ -668,6 +681,15 @@ class Duel(commands.Cog):
             FIELD_VALUE = f"HP {health_bar}\nChakra {energy_bar}\n\n"
             for abilities in ALL_STUFF[0][4]:
                 FIELD_VALUE = FIELD_VALUE + f"{abilities[1]} {abilities[0]} | {abilities[3]}\n"
+
+            if round == 1:
+                    pass
+            else:
+                FIELD_VALUE = FIELD_VALUE + f"\n**Last Round**\n"
+                FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user1_last_move[0]}\n💥 **Damage: ** {user1_last_move[2]} \n⚡ **Chakra:** {user1_last_move[1]}\n🍻 **Effect:** {user1_last_move[3]}\n"
+
+
+
             embed.add_field(name=f"{ctx.author.display_name} **[{ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
 
             # Health Bar
@@ -683,6 +705,14 @@ class Duel(commands.Cog):
             FIELD_VALUE = f"HP {health_bar}\nChakra {energy_bar}\n\n"
             for abilities in ALL_STUFF[1][4]:
                 FIELD_VALUE = FIELD_VALUE + f"{abilities['emoji']} {abilities['ability_name']} | {abilities['chakra']}\n"
+
+            if round == 1:
+                    pass
+            else:
+                FIELD_VALUE = FIELD_VALUE + f"\n**Last Round**\n"
+                FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user2_last_move[0]}\n💥 **Damage: ** {user2_last_move[2]} \n⚡ **Chakra:** {user2_last_move[1]}\n🍻 **Effect:** {user2_last_move[3]}\n"
+
+            
             embed.add_field(name=f"{attributes[0]}", value=FIELD_VALUE)
             # Send the embed
             await ctx.send(embed=embed)
@@ -691,27 +721,27 @@ class Duel(commands.Cog):
 
             users = await get_human_stats()
             msg = f"⚔️ Attack:\nDamage - {users[str(ctx.author.id)]['PDMG']}\nChakra - 0\n"
-            button = self.Make_Button(ctx, label="Attack", style=discord.ButtonStyle.green, emoji="⚔️", custom_id="Attack", ability="PDMG", disabled=False, victim=npc_current_health, view=view2)
+            button = self.Make_Button(ctx,outer_instance=self , label="Attack", style=discord.ButtonStyle.green, emoji="⚔️", custom_id="Attack", ability="PDMG", disabled=False, victim=npc_current_health, view=view2)
             view2.add_item(button)
                 
             for abilities in ALL_STUFF[0][4]:
                 if abilities[4] > ALL_STUFF[0][5]:
-                    button = self.Make_Button(ctx, label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=True, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)
+                    button = self.Make_Button(ctx,outer_instance=self , label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=True, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)
                     view2.add_item(button)
                     msg = msg + f"{abilities[1]} {abilities[0]} - **Locked**:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
                 else:
                     if users[str(ctx.author.id)]["Energy"] < abilities[3]:
-                        button = self.Make_Button(ctx, label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=True, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)    
+                        button = self.Make_Button(ctx,outer_instance=self , label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=True, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)    
                         view2.add_item(button)
                         msg = msg + f"{abilities[1]} {abilities[0]} - **Low Chakra**:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
                     else:
-                        button = self.Make_Button(ctx, label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=False, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)    
+                        button = self.Make_Button(ctx,outer_instance=self , label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=False, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)    
                         view2.add_item(button)
                         msg = msg + f"{abilities[1]} {abilities[0]}:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
 
-            button = self.Make_Button(ctx, label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=npc_current_health, view=view2)
+            button = self.Make_Button(ctx,outer_instance=self , label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=npc_current_health, view=view2)
             view2.add_item(button)
-            button = self.Make_Button(ctx, label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=npc_current_health, view=view2)
+            button = self.Make_Button(ctx,outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=npc_current_health, view=view2)
             view2.add_item(button)
             
 
@@ -723,7 +753,8 @@ class Duel(commands.Cog):
             for abilities in ALL_STUFF[1][4]:
                 set_of_abilities.append([abilities["ability_name"], abilities["dmg"]])
             ability = random.choice(set_of_abilities)
-            await duel_stats_change(ctx.author, random.randint(int(ability[1])/2, int(ability[1])), "HP")
+            ability[1] = random.randint(int(ability[1])/2, int(ability[1]))
+            await duel_stats_change(ctx.author, ability[1], "HP")
 
             # Change stats
             res = await view2.wait()
@@ -745,6 +776,18 @@ class Duel(commands.Cog):
                                     break
                                 else:
                                     pass
+
+
+                                for buttons in [x for x in view2.children if x.custom_id]:
+                                    if buttons.pressed:
+                                        user1_last_move = buttons.pressed
+                                        break
+                                    else:
+                                        pass
+
+                                user2_last_move = [ability[0], 0, ability[1], "*No effects inflicted*"]
+                                
+                                round += 1
         if loop[0] == False:
             if loop[1] != ctx.author:
                 await ctx.reply("You died!")
