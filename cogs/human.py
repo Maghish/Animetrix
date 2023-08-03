@@ -142,6 +142,47 @@ class Duel(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
         self.effects = []
+        self.effect_loop.start()
+
+    
+
+
+    async def cog_unload(self):
+        self.effect_loop.cancel()
+
+    @tasks.loop(seconds=3)
+    async def effect_loop(self):
+        for thing in self.effects:
+            try:
+                if thing["count"] != 0:
+                    await duel_stats_change(thing["victim"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "HP")
+                    thing["count"] -= 1
+                    continue
+                else:
+                    self.effects.remove({
+                        "user": thing["user"],
+                        "victim": thing["victim"],
+                        "amount": thing["amount"],
+                        "type": thing["type"],
+                        "count": thing["count"]
+                    })    
+                    continue
+            except:
+                break
+    
+
+    
+
+
+
+
+
+
+
+
+        
+        
+
 
     class DefaultView(View):
 
@@ -154,101 +195,6 @@ class Duel(commands.Cog):
         async def button_callback(self, interaction, button):
             await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
             self.stop()
-
-
-
-
-
-
-
-
-
-
-
-    @tasks.loop(seconds=3, count=20)
-    async def bleed(self, user, victim, amount: int):
-        t = 0
-        for players in self.effects:
-            if user == players["user"] and victim == players["victim"] and players["type"] == ["Bleeding", "🩸"]:
-                t = 1
-            else:              
-                pass
-        
-
-        if t == 0:
-            self.effects.append({
-                "user": user,
-                "victim": victim, 
-                "type": ["Bleeding", "🩸"],
-                "count": 19
-            })
-        else:
-            for things in self.effects:
-                if user == things["user"] and victim == things["victim"]:
-                    things["count"] -= 1
-
-
-
-        await duel_stats_change(victim, random.randint(int(amount/2), int(amount)), "HP")
-
-    @bleed.after_loop
-    async def after_bleed(self):
-        for things in self.effects:
-            if things["count"] == 0:
-                self.effects.remove({
-                    "user": things["user"], 
-                    "victim": things["victim"], 
-                    "type": things["type"], 
-                    "count": things["count"],
-                })
-    
-    @tasks.loop(seconds=3, count=20)
-    async def burn(self, user, victim, amount: int):
-        t = 0
-        for players in self.effects:
-            if user == players["user"] and victim == players["victim"] and players["type"] == ["Burning", "🔥"]:
-                t = 1
-            else:              
-                pass
-        
-
-        if t == 0:
-            self.effects.append({
-                "user": user,
-                "victim": victim, 
-                "type": ["Burning", "🔥"],
-                "count": 19
-            })
-        else:
-            for things in self.effects:
-                if user == things["user"] and victim == things["victim"]:
-                    things["count"] -= 1
-
-
-
-        await duel_stats_change(victim, random.randint(int(amount/2), int(amount)), "HP")
-
-
-    @burn.after_loop
-    async def after_burn(self):
-        for things in self.effects:
-            if things["count"] == 0:
-                self.effects.remove({
-                    "user": things["user"], 
-                    "victim": things["victim"], 
-                    "type": things["type"], 
-                    "count": things["count"],
-                })
-
-
-        
-        
-
-
-
-
-
-
 
 
 
@@ -321,18 +267,47 @@ class Duel(commands.Cog):
                     else:
                         pass
                 try:
+                    dmg = random.randint(int(dmg/2), int(dmg))
                     if repeat:
                         if repeat == "Bleeding":
-                            if self.outer_instance.bleed.is_running():
-                                pass
-                            else:
-                                self.outer_instance.bleed.start(interaction.user, self.victim, dmg/2)
+                            for things in self.outer_instance.effects:
+                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Bleeding", "🩸"]:
+                                    self.outer_instance.effects.remove({
+                                        "user": things["user"],
+                                        "victim": things["victim"],
+                                        "amount": things["amount"],
+                                        "type": things["type"],
+                                        "count": things["count"]
+                                    })
+                                else:
+                                    pass
+                            self.outer_instance.effects.append({
+                                "user": interaction.user,
+                                "victim": self.victim,
+                                "amount": int(dmg/2),
+                                "type": ["Bleeding", "🩸"],
+                                "count": 7
+                            })
                         elif repeat == "Burning":
-                            if self.outer_instance.burn.is_running():
-                                pass
-                            else:
-                                self.outer_instance.burn.start(interaction.user, self.victim, dmg/4)
-                    dmg = random.randint(int(dmg/2), int(dmg))
+                            for things in self.outer_instance.effects:
+                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Burning", "🔥"]:
+                                    self.outer_instance.effects.remove({
+                                        "user": things["user"],
+                                        "victim": things["victim"],
+                                        "amount": things["amount"],
+                                        "type": things["type"],
+                                        "count": things["count"]
+                                    })
+                                else:
+                                    pass
+        
+                            self.outer_instance.effects.append({
+                                "user": interaction.user,
+                                "victim": self.victim,
+                                "amount": dmg,
+                                "type": ["Burning", "🔥"],
+                                "count": 3
+                            })
                     await duel_stats_change(self.victim, dmg , "HP")
                     await duel_stats_change(interaction.user, chakra, "Energy")
                     if repeat:
