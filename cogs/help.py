@@ -1,5 +1,4 @@
-import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from fun_config import *
 
 
@@ -23,9 +22,6 @@ class help(commands.Cog):
             
         else:
             return
-                
-    
-
 
 async def setup(client:commands.Bot) -> None:
    await client.add_cog(help(client))

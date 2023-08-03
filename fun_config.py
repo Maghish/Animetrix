@@ -214,7 +214,6 @@ async def duel_stats_change(user, change = 0, mode = ("HP", "Energy")):
 
     users = await get_human_stats()
     stat = users[str(user.id)][mode]
-    maxstat = users[str(user.id)][f"Max{mode}"]
     if (stat - int(change)) < 0:
         users[str(user.id)][mode] = 0
     else:
