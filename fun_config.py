@@ -222,7 +222,8 @@ async def duel_stats_change(user, change = 0, mode = ("HP", "Energy")):
     with open (human_json_file, "w") as f:
         json.dump(users,f, indent=1)
     
-    return
+    users = await get_human_stats()
+    return users[str(user.id)][mode]
 
 
 
@@ -342,7 +343,7 @@ async def buy_this(user,item_name,amount):
                     break
                 index+=1 
             if t == None:
-                obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": lvl, "exp": exp}
+                obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": 1, "exp": 0}
                 usersv2[str(user.id)]["Scrolls"].append(obj)
         except:
             obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": 1, "exp": 0}

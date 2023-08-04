@@ -155,9 +155,23 @@ class Duel(commands.Cog):
         for thing in self.effects:
             try:
                 if thing["count"] != 0:
-                    await duel_stats_change(thing["victim"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "HP")
-                    thing["count"] -= 1
-                    continue
+                    if thing["type"][2].startswith("Debuff"):
+                        if thing["type"][2].endswith("Reduce"):
+                            await duel_stats_change(thing["victim"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "HP")
+                            thing["count"] -= 1
+                            continue
+                        elif thing["type"][2].endswith("Stun"):
+                            res = await duel_stats_change(thing["victim"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "Energy")
+                            thing["count"] -= 1
+                            continue
+                    elif thing["type"][2].startswith("Buff"):
+                        if thing["type"][2].endswith("HP"):
+                            await heal_human(thing["user"], random.randint(1, int(thing["amount"])), "HP")
+
+                            thing["count"] -= 1
+                            continue
+
+                    
                 else:
                     self.effects.remove({
                         "user": thing["user"],
@@ -271,7 +285,7 @@ class Duel(commands.Cog):
                     if repeat:
                         if repeat == "Bleeding":
                             for things in self.outer_instance.effects:
-                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Bleeding", "🩸"]:
+                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Bleeding", "🩸", "Debuff/Reduce"]:
                                     self.outer_instance.effects.remove({
                                         "user": things["user"],
                                         "victim": things["victim"],
@@ -285,12 +299,12 @@ class Duel(commands.Cog):
                                 "user": interaction.user,
                                 "victim": self.victim,
                                 "amount": int(dmg/2),
-                                "type": ["Bleeding", "🩸"],
+                                "type": ["Bleeding", "🩸", "Debuff/Reduce"],
                                 "count": 9 
                             })
                         elif repeat == "Burning":
                             for things in self.outer_instance.effects:
-                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Burning", "🔥"]:
+                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Burning", "🔥", "Debuff/Reduce"]:
                                     self.outer_instance.effects.remove({
                                         "user": things["user"],
                                         "victim": things["victim"],
@@ -305,9 +319,54 @@ class Duel(commands.Cog):
                                 "user": interaction.user,
                                 "victim": self.victim,
                                 "amount": dmg,
-                                "type": ["Burning", "🔥"],
+                                "type": ["Burning", "🔥", "Debuff/Reduce"],
                                 "count": 5
                             })
+
+                        elif repeat == "Confusion":
+                            for things in self.outer_instance.effects:
+                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Confusion", "😵‍💫", "Debuff/Stun"]:
+                                    self.outer_instance.effects.remove({
+                                        "user": things["user"],
+                                        "victim": things["victim"],
+                                        "amount": things["amount"],
+                                        "type": things["type"],
+                                        "count": things["count"]
+                                    })
+                                else:
+                                    pass
+        
+                            self.outer_instance.effects.append({
+                                "user": interaction.user,
+                                "victim": self.victim,
+                                "amount": 15,
+                                "type": ["Confusion", "😵‍💫", "Debuff/Stun"],
+                                "count": 8
+                            })
+                        
+                        elif repeat == "Regenerate":
+                            for things in self.outer_instance.effects:
+                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == ["Regenerate", "❤️‍🩹", "Buff/HP"]:
+                                    self.outer_instance.effects.remove({
+                                        "user": things["user"],
+                                        "victim": things["victim"],
+                                        "amount": things["amount"],
+                                        "type": things["type"],
+                                        "count": things["count"]
+                                    })
+                                else:
+                                    pass
+        
+                            self.outer_instance.effects.append({
+                                "user": interaction.user,
+                                "victim": self.victim,
+                                "amount": 100,
+                                "type": ["Regenerate", "❤️‍🩹", "Buff/HP"],
+                                "count": 5
+                            })
+
+                        
+
                     await duel_stats_change(self.victim, dmg , "HP")
                     await duel_stats_change(interaction.user, chakra, "Energy")
                     if repeat:
@@ -375,11 +434,14 @@ class Duel(commands.Cog):
                 FIELD_VALUE = FIELD_VALUE + f"\n**Buffs/Debuffs**\n"
 
                 for players in self.effects:  
-                    if ctx.author == players["victim"] and user == players["user"]:
-                        FIELD_VALUE =  FIELD_VALUE + f"{players['type'][1]} {players['type'][0]}\n"
-                        continue
+                    if players['type'][2].startswith("Debuff"):
+                        if ctx.author == players["victim"] and user == players["user"]:
+                            FIELD_VALUE =  FIELD_VALUE + f"{players['type'][1]} {players['type'][0]}\n"
+                            continue
                     else:
-                        pass
+                        if ctx.author == players["user"] and user == players["victim"]:
+                            FIELD_VALUE =  FIELD_VALUE + f"{players['type'][1]} {players['type'][0]}\n"
+                            continue
 
                 if FIELD_VALUE.endswith("Debuffs**\n"):
                     FIELD_VALUE = FIELD_VALUE + f"*No Effects*\n"
@@ -409,8 +471,15 @@ class Duel(commands.Cog):
                 FIELD_VALUE = FIELD_VALUE + f"\n**Buffs/Debuffs**\n"
 
                 for players in self.effects:  
-                    if user == players["victim"] and ctx.author == players["user"]:
-                        FIELD_VALUE =  FIELD_VALUE + f"{players['type'][1]} {players['type'][0]}\n"
+                    if players['type'][2].startswith("Debuff"):
+                        if user == players["victim"] and ctx.author == players["user"]:
+                            FIELD_VALUE =  FIELD_VALUE + f"{players['type'][1]} {players['type'][0]}\n"
+                            continue
+                    else:
+                        if user == players["user"] and ctx.author == players["victim"]:
+                            FIELD_VALUE =  FIELD_VALUE + f"{players['type'][1]} {players['type'][0]}\n"
+                            continue
+
 
                 if FIELD_VALUE.endswith("Debuffs**\n"):
                     FIELD_VALUE = FIELD_VALUE + f"*No Effects*\n"
@@ -450,10 +519,11 @@ class Duel(commands.Cog):
                             view2.add_item(button)
                             msg = msg + f"{abilities[1]} {abilities[0]}:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
 
-                button = self.Make_Button(ctx, outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=ctx.author, view=view2)
-                view2.add_item(button)
                 button = self.Make_Button(ctx, outer_instance=self , label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=ctx.author, view=view2)
                 view2.add_item(button)
+                button = self.Make_Button(ctx, outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=ctx.author, view=view2)
+                view2.add_item(button)
+                
 
                 msg = msg + "Choose an ability below to perform!"
                 await ctx.author.send(msg,view=view2)
@@ -656,7 +726,7 @@ class Duel(commands.Cog):
 
 
     @commands.command()
-    async def pve(self, ctx, npc_name):
+    async def brawl(self, ctx, npc_name):
         attributes = await get_all_attributes(npc_name, scroll_data_json_file, Key=["itemname"])
         if attributes != []:
            attributes = attributes 
