@@ -333,8 +333,6 @@ async def buy_this(user,item_name,amount):
             t = None
             for thing in usersv2[str(user.id)]["Scrolls"]:
                 n = thing["item"]
-                lvl = thing["Level"]
-                exp = thing["exp"]
                 if n == name_:
                     old_amt = thing["amount"]
                     new_amt = old_amt + amount
@@ -564,5 +562,11 @@ async def eat_this(user, item_name, amount):
 
     await heal_human(user, value, "HP") 
     return [True, item_name, value, amount]
+
+def percentage_change(value, percentage, method="Add"):
+    if method == "Add":
+        return float(value - (value * (percentage/100)))
+    elif method == "Subtract":
+        return float(value - (value * (percentage/100)))
 
  

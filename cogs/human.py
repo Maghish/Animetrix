@@ -167,13 +167,14 @@ class Duel(commands.Cog):
                     elif thing["type"][2].startswith("Buff"):
                         if thing["type"][2].endswith("HP"):
                             await heal_human(thing["user"], random.randint(1, int(thing["amount"])), "HP")
-
                             thing["count"] -= 1
                             continue
                         elif thing["type"][2].endswith("Armor"):
-                            await duel_stats_change(thing["user"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "Energy")
-
-                            thing["count"] -= 1
+                            res = await duel_stats_change(thing["user"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "Energy")
+                            if res == 0:
+                                thing["count"] = 0
+                            else:
+                                thing["count"] -= 1
                             continue
                     
                 else:
@@ -269,54 +270,83 @@ class Duel(commands.Cog):
                         dmg = ability["dmg"]
                         chakra = ability["chakra"]
                         repeat = ability["repeat"]
-                        try:
-                            effect_ignore = ability["effect_ignore"]
-                        except:
-                            effect_ignore = []
-
+                        effect_ignore = ability["effect_ignore"]
+                        effect_break = ability["effect_break"]
                         break
                     else:
                         pass
                 try:
                     ignore = False
-                    for things in self.outer_instance.effects:
-                        if things["user"] == self.victim and things["victim"] == interaction.user:
-                            if things["type"][0] in effect_ignore:
-                                self.pressed = [f"~~{ability_name}~~", chakra, 0, f"*Nulifed by {things['type'][0]}*"]
-                                ignore = True
-                                break
+                    armor = False
+                    if effect_ignore:
+                        for things in self.outer_instance.effects:
+                            if things["user"] == self.victim and things["victim"] == interaction.user:
+                                if things["type"][0] in effect_ignore:
+                                    self.pressed = [f"~~{ability_name}~~", chakra, 0, f"*Nullified by {things['type'][0]}*"]
+                                    ignore = True
+                                    break
+                                else:
+                                    if things["type"][2] == "Buff/Armor":
+                                        armor = True
+                                        continue
+                                    else:
+                                        pass
                             else:
                                 pass
-                        else:
-                            pass
-                    
+                        
                     if ignore == False:
-                        dmg = random.randint(int(dmg/2), int(dmg))
-                        if repeat:
+                        break_armor = False
+                        if effect_break:
                             for things in self.outer_instance.effects:
-                                if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == [repeat[0], repeat[1], repeat[2]]:
-                                    self.outer_instance.effects.remove({
-                                        "user": things["user"],
-                                        "victim": things["victim"],
-                                        "amount": things["amount"],
-                                        "type": things["type"],
-                                        "count": things["count"]
-                                    })
-                                else:
-                                    pass
-                            self.outer_instance.effects.append({
-                                "user": interaction.user,
-                                "victim": self.victim,
-                                "amount": repeat[3],
-                                "type": [repeat[0], repeat[1], repeat[2]],
-                                "count": repeat[4]
-                            })
+                                if things["user"] == self.victim and things["victim"] == interaction.user:
+                                    if things["type"][0] in effect_break:
+                                        self.outer_instance.effects.remove({
+                                            "user": things["user"],
+                                            "victim": things["victim"],
+                                            "amount": things["amount"],
+                                            "type": things["type"],
+                                            "count": things["count"]
+                                        })
+                                        self.pressed = [f"{ability_name}", chakra, 0, f"*Broke {things['type'][0]}*"]
+                                        break_armor = True
+                                        break
+                                    else:
+                                        pass
+                        
+                        if break_armor == False:
 
-                            self.pressed = [ability_name, chakra, dmg, repeat[0]]
-                        else:
-                            self.pressed  = [ability_name, chakra, dmg, "*No effects inflicted*"]
+                            dmg = random.randint(int(dmg/2), int(dmg))
+                            if armor:
+                                dmg = int(percentage_change(dmg, int(random.randint(20, 80))))
+                            if repeat:
+                                for things in self.outer_instance.effects:
+                                    if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == [repeat[0], repeat[1], repeat[2]]:
+                                        self.outer_instance.effects.remove({
+                                            "user": things["user"],
+                                            "victim": things["victim"],
+                                            "amount": things["amount"],
+                                            "type": things["type"],
+                                            "count": things["count"]
+                                        })
+                                    else:
+                                        pass
+                                self.outer_instance.effects.append({
+                                    "user": interaction.user,
+                                    "victim": self.victim,
+                                    "amount": repeat[3],
+                                    "type": [repeat[0], repeat[1], repeat[2]],
+                                    "count": repeat[4]
+                                })
 
-                        await duel_stats_change(self.victim, dmg , "HP")
+                                self.pressed = [ability_name, chakra, dmg, repeat[0]]
+                            else:
+                                self.pressed  = [ability_name, chakra, dmg, "*No effects inflicted*"]
+
+                        
+        
+                            await duel_stats_change(self.victim, dmg , "HP")
+                    
+
         
                     await duel_stats_change(interaction.user, chakra, "Energy")
                     await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
@@ -396,6 +426,7 @@ class Duel(commands.Cog):
 
                 if round == 1:
                     pass
+                
                 else:
                     FIELD_VALUE = FIELD_VALUE + f"\n**Last Round**\n"
                     FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user1_last_move[0]}\n💥 **Damage: ** {user1_last_move[2]} \n⚡ **Chakra:** {user1_last_move[1]}\n🍻 **Effect:** {user1_last_move[3]}\n"
