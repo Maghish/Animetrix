@@ -214,7 +214,6 @@ async def duel_stats_change(user, change = 0, mode = ("HP", "Energy")):
 
     users = await get_human_stats()
     stat = users[str(user.id)][mode]
-    maxstat = users[str(user.id)][f"Max{mode}"]
     if (stat - int(change)) < 0:
         users[str(user.id)][mode] = 0
     else:
@@ -223,7 +222,8 @@ async def duel_stats_change(user, change = 0, mode = ("HP", "Energy")):
     with open (human_json_file, "w") as f:
         json.dump(users,f, indent=1)
     
-    return
+    users = await get_human_stats()
+    return users[str(user.id)][mode]
 
 
 
@@ -333,8 +333,6 @@ async def buy_this(user,item_name,amount):
             t = None
             for thing in usersv2[str(user.id)]["Scrolls"]:
                 n = thing["item"]
-                lvl = thing["Level"]
-                exp = thing["exp"]
                 if n == name_:
                     old_amt = thing["amount"]
                     new_amt = old_amt + amount
@@ -343,7 +341,7 @@ async def buy_this(user,item_name,amount):
                     break
                 index+=1 
             if t == None:
-                obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": lvl, "exp": exp}
+                obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": 1, "exp": 0}
                 usersv2[str(user.id)]["Scrolls"].append(obj)
         except:
             obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": 1, "exp": 0}
@@ -565,3 +563,10 @@ async def eat_this(user, item_name, amount):
     await heal_human(user, value, "HP") 
     return [True, item_name, value, amount]
 
+def percentage_change(value, percentage, method="Add"):
+    if method == "Add":
+        return float(value - (value * (percentage/100)))
+    elif method == "Subtract":
+        return float(value - (value * (percentage/100)))
+
+ 

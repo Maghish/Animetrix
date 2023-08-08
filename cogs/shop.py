@@ -64,7 +64,7 @@ class Shop(commands.Cog):
         await open_account(ctx.author)
 
         res = await buy_this(ctx.author,item,amount)
-
+        
         if not res[0]:
             if res[1]==1:
                 await ctx.send("The Item doesn't exists")
