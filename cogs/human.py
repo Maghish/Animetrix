@@ -311,13 +311,16 @@ class Duel(commands.Cog):
                                         break_armor = True
                                         break
                                     else:
-                                        pass
+                                        if things["type"][2] == "Buff/Armor":
+                                            armor = True
+                                            continue
+                                        else:
+                                            pass
                         
                         if break_armor == False:
-
                             dmg = random.randint(int(dmg/2), int(dmg))
-                            if armor:
-                                dmg = int(percentage_change(dmg, int(random.randint(20, 80))))
+                           
+
                             if repeat:
                                 for things in self.outer_instance.effects:
                                     if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == [repeat[0], repeat[1], repeat[2]]:
@@ -328,8 +331,20 @@ class Duel(commands.Cog):
                                             "type": things["type"],
                                             "count": things["count"]
                                         })
+                                        if things["type"][2] == "Buff/Armor":
+                                            armor = True
                                     else:
-                                        pass
+                                        if things["user"] == self.victim and things["victim"] == interaction.user:
+                                            if things["type"][2] == "Buff/Armor":
+                                                armor = True
+                                                continue
+                                            else:
+                                                pass
+                                        else:
+                                            pass
+                                            
+                                        
+
                                 self.outer_instance.effects.append({
                                     "user": interaction.user,
                                     "victim": self.victim,
@@ -337,6 +352,12 @@ class Duel(commands.Cog):
                                     "type": [repeat[0], repeat[1], repeat[2]],
                                     "count": repeat[4]
                                 })
+
+                                
+
+                                if armor:
+                                    dmg = int(percentage_change(dmg, int(random.randint(10, 80))))
+
 
                                 self.pressed = [ability_name, chakra, dmg, repeat[0]]
                             else:
@@ -360,8 +381,7 @@ class Duel(commands.Cog):
                         else:
                             self.victim -= DMG
                         await duel_stats_change(interaction.user, chakra, "Energy")
-                        self.pressed = [ability_name, chakra, DMG, "*No effects inflicted*"]
-           
+                        self.pressed = [ability_name, chakra, DMG, "*No effects inflicted*"] 
                         await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
                     except:
                         await interaction.response.send_message("Something went wrong!")
@@ -704,7 +724,7 @@ class Duel(commands.Cog):
 
 
     @commands.command()
-    async def brawl(self, ctx, npc_name):
+    async def npcfight(self, ctx, npc_name):
         attributes = await get_all_attributes(npc_name, scroll_data_json_file, Key=["itemname"])
         if attributes != []:
            attributes = attributes 
@@ -819,14 +839,15 @@ class Duel(commands.Cog):
                                 loop = [False, ctx.author, attributes[0]]
                                 break
                             else:
-                                if [x for x in view2.children if x.custom_id][index].victim != npc_current_health:
+                                if [x for x in view2.children if x.custom_id][index].victim < npc_current_health:
                                     npc_current_health = [x for x in view2.children if x.custom_id][index].victim
-                                    break
+                                    continue
                                 else:
                                     pass
 
-
+                                
                                 for buttons in [x for x in view2.children if x.custom_id]:
+                                    
                                     if buttons.pressed:
                                         user1_last_move = buttons.pressed
                                         break
@@ -834,6 +855,7 @@ class Duel(commands.Cog):
                                         pass
 
                                 user2_last_move = [ability[0], 0, ability[1], "*No effects inflicted*"]
+                                
                                 
                                 round += 1
         if loop[0] == False:
