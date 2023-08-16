@@ -6,7 +6,6 @@ from fun_config import *
 
 
 
-
 class economy(commands.Cog):
 
     def __init__(self, client: commands.Bot):

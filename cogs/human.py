@@ -237,6 +237,10 @@ class Duel(commands.Cog):
                 await duel_stats_change(user, -1*chakra, "Energy")
                 self.pressed = ["Recharge Chakra", chakra, 0, "*No effects inflicted*"]
                 await interaction.response.send_message(f"⚡{chakra} recharged!\nGet back to {self.ctx.channel.mention}")
+            elif self.ability == "Backpack":
+                users = await get_inventory_data()
+                user = interaction.user
+                # here / backpack
             elif self.ability == "PDMG":
                 users = await get_human_stats()
                 dmg = users[str(interaction.user.id)]["PDMG"]
@@ -356,7 +360,7 @@ class Duel(commands.Cog):
                                 
 
                                 if armor:
-                                    dmg = int(percentage_change(dmg, int(random.randint(10, 80))))
+                                    dmg = int(await percentage_change(dmg, int(random.randint(10, 80))))
 
 
                                 self.pressed = [ability_name, chakra, dmg, repeat[0]]
@@ -416,6 +420,7 @@ class Duel(commands.Cog):
 
                 view2 = View()
                 view3 = View()
+               
 
 
 
@@ -450,7 +455,6 @@ class Duel(commands.Cog):
                 else:
                     FIELD_VALUE = FIELD_VALUE + f"\n**Last Round**\n"
                     FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user1_last_move[0]}\n💥 **Damage: ** {user1_last_move[2]} \n⚡ **Chakra:** {user1_last_move[1]}\n🍻 **Effect:** {user1_last_move[3]}\n"
-
 
 
                 embed.add_field(name=f"{ctx.author.display_name} **[{ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
@@ -519,12 +523,17 @@ class Duel(commands.Cog):
 
                 button = self.Make_Button(ctx, outer_instance=self , label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=ctx.author, view=view2)
                 view2.add_item(button)
+                button = self.Make_Button(ctx, outer_instance=self, label="Backpack", style=discord.ButtonStyle.primary, emoji="🎒", custom_id="Backpack", ability="Backpack", disabled=False, victim=ctx.author, view=view2)
+                view2.add_item(button)
                 button = self.Make_Button(ctx, outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=ctx.author, view=view2)
                 view2.add_item(button)
+        
                 
 
                 msg = msg + "Choose an ability below to perform!"
                 await ctx.author.send(msg,view=view2)
+                
+                
 
                 msg = f"⚔️ Attack:\nDamage - {users[str(ctx.author.id)]['PDMG']}\nChakra - 0\n"
                 button = self.Make_Button(ctx, outer_instance=self ,label="Attack", style=discord.ButtonStyle.green, emoji="⚔️", custom_id="Attack", ability="PDMG", disabled=False, victim=ctx.author, view=view3)
@@ -547,6 +556,8 @@ class Duel(commands.Cog):
                             msg = msg + f"{abilities[1]} {abilities[0]}:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
 
                 button = self.Make_Button(ctx,outer_instance=self , label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=user, view=view3)
+                view3.add_item(button)
+                button = self.Make_Button(ctx, outer_instance=self, label="Backpack", style=discord.ButtonStyle.primary, emoji="🎒", custom_id="Backpack", ability="Backpack", disabled=False, victim=ctx.author, view=view3)
                 view3.add_item(button)
                 button = self.Make_Button(ctx,outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=user, view=view3)
                 view3.add_item(button)

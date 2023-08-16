@@ -81,6 +81,9 @@ async def open_inv(user):
         users[str(user.id)] = {}
         users[str(user.id)]["Inventory"] = "None"
         users[str(user.id)]["Food"] = "None"
+        users[str(user.id)]["Crystal"] = "None"
+        users[str(user.id)]["Backpack"] = "None"
+        users[str(user.id)]["Fragments"] = 0
 
 
     with open (inventory_json_file, "w") as f:
@@ -556,17 +559,156 @@ async def eat_this(user, item_name, amount):
     
     # 4. If so update the stats of the user
     users = await get_human_stats()
+    value = value * amount 
     if (value*amount + int(users[str(user.id)]["HP"])) > users[str(user.id)]["MaxHP"]:
         if value*amount >= (int(users[str(user.id)]["MaxHP"]) - int(users[str(user.id)]["HP"])):
             value = int(users[str(user.id)]["MaxHP"]) - int(users[str(user.id)]["HP"])
 
+        
+
     await heal_human(user, value, "HP") 
     return [True, item_name, value, amount]
 
-def percentage_change(value, percentage, method="Add"):
+
+async def add_frag(self, user, crystal_name, amount):
+    await open_inv(user)
+    # 1. Check if the user already has fragments of the crystal
+    users = await get_inventory_data()
+    try:
+        index = 0
+        t = None
+        for thing in users[str(user.id)]["Fragments"]:
+            if thing[0].lower() == crystal_name.lower():
+                old_amt = thing[1]
+                new_amt = old_amt + amount
+                users[str(user.id)]["Fragments"][index][1] = new_amt
+
+                with open(inventory_json_file, "w") as json_file:
+                    json.dump(users, json_file, indent=1)
+
+                t = 1
+                break
+            index+=1 
+        if t == None:
+            t = 0
+            with open(items_json_file, "r") as json_file:
+                data = json.load(json_file)
+                data = (data)
+                for things in data:
+                    if things["itemname"].lower() == crystal_name.lower():
+                        crystal_name = things["itemname"]
+                        t = 1
+                        break
+                    else:
+                        pass
+            if t == 0:
+                return [False, 0]
+            else:
+                users[str(user.id)]["Fragments"].append([crystal_name, amount])
+
+    except:
+        # 3. If not, create new list
+        t = 0
+        with open(items_json_file, "r") as json_file:
+            data = json.load(json_file)
+            data = (data)
+            for things in data:
+                if things["itemname"].lower() == crystal_name.lower():
+                    crystal_name = things["itemname"]
+                    t = 1
+                    break
+                else:
+                    pass
+        if t == 0:
+            return [False, 0]
+        else:
+            users[str(user.id)]["Fragments"] =[[crystal_name, amount]]
+    
+    with open(inventory_json_file, "w") as json_file:
+        json.dump(users, json_file, indent=1)
+
+    return [True, 0, crystal_name, amount]
+    
+    
+
+async def sep_int_and_str(stuff):
+    amount = ""
+    item_name = ""
+    for letter in stuff:
+        try:
+            letter = int(letter)
+            amount = amount + str(letter)
+            continue
+        except:
+            item_name = item_name + str(letter)
+            continue
+        
+    if amount == "":
+        amount = 1   
+    return [str(item_name), int(amount)] 
+
+
+
+
+async def percentage_change(value, percentage, method="Add"):
     if method == "Add":
         return float(value - (value * (percentage/100)))
     elif method == "Subtract":
         return float(value - (value * (percentage/100)))
+    
 
- 
+async def claim_crystal(user, crystal_name, amount):
+    name_ = None
+    with open(items_json_file, "r") as json_file:
+        data = json.load(json_file)
+        data = (data)
+        for items in data:
+            if items["itemname"].lower() == crystal_name.lower():
+                mode = items["mode"]
+                if mode == "Shop/Crystal":
+                    name_ = items["itemname"]
+                    price = items["price"]
+                    emoji = items["emoji"]
+                    value = items["value"]
+                    rarity = items["rarity"]
+                    break
+                else:
+                    pass
+            else: 
+                pass
+    
+    if name_ == None:
+        return [False, 1]
+    
+    users = await get_inventory_data()
+    cost = price*amount
+    if int(users[str(user.id)]["Fragments"]) < cost:
+        return [False, 2] 
+    
+    try:
+        index = 0
+        t = None
+        for thing in users[str(user.id)]["Crystal"]:
+            n = thing["item"]
+            if n == name_:
+                old_amt = thing["amount"]
+                new_amt = old_amt + amount
+                users[str(user.id)]["Crystal"][index]["amount"] = new_amt
+                t = 1
+                break
+            index += 1
+
+        if t == None:
+            obj = {"item": name_, "amount": amount, "value": value, "mode": mode, "rarity": rarity}
+            users[str(user.id)]["Crystal"].append(obj)
+
+    except:
+        obj = {"item": name_, "amount": amount, "value": value, "mode": mode, "rarity": rarity}
+        users[str(user.id)]["Crystal"] = [obj]
+
+    users[str(user.id)]["Fragments"] -= cost
+
+    with open(inventory_json_file, "w") as json_file:
+        json.dump(users, json_file, indent=1)
+
+    return [True, name_, amount]
