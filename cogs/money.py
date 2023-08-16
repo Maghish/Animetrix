@@ -23,7 +23,7 @@ class economy(commands.Cog):
     async def daily(self, ctx):
         amount = random.randint(100, 9999)
         await update_bank(ctx.author, amount, "Wallet")
-        await ctx.send(f"You got ${amount}")
+        await ctx.send(f"You got {amount} Chibucks!")
 
     @commands.group(aliases = ["balance", "bal"])
     async def balancee(self, ctx):
@@ -38,7 +38,7 @@ class economy(commands.Cog):
             walletamt = users[str(user.id)]["Wallet"]
             em = discord.Embed(
                 title= (f"{user.name}'s leftovers"),color= 0xcc00ff)
-            em.add_field(name = "Wallet", value = f"${walletamt:,}")
+            em.add_field(name = "Wallet", value = f"{walletamt:,} Chibucks")
             em.set_thumbnail(url = ctx.author.avatar)
             await ctx.send(embed = em)
 
@@ -51,7 +51,7 @@ class economy(commands.Cog):
         else:
             user = ctx.author
             users = await get_bank_data()
-            walletamt = users[str(member.id)]["Zcoins"]
+            walletamt = users[str(member.id)]["Wallet"]
             zero = str(0)
             em = discord.Embed(
                 title= (f"{member.name}'s leftovers"),color= 0xcc00ff)
@@ -75,14 +75,14 @@ class economy(commands.Cog):
                 await ctx.send("Enter the amount")
                 return 
             if result is True:
-                await ctx.send("Insufficient Money")
+                await ctx.send("Insufficient Chibucks")
                 return
             if int(amount)<0:
                 await ctx.send("Invaild amount")
                 return
             await update_bank(ctx.author,-1* int(amount), "Wallet"),
             await update_bank(member, amount, "Wallet")
-            await ctx.reply (f'${amount} has been transferred from {ctx.author} to {member}!')
+            await ctx.reply (f'{amount} Chibucks has been transferred from {ctx.author} to {member}!')
 
     
 

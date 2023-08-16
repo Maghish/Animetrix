@@ -33,7 +33,7 @@ class Shop(commands.Cog):
         color= 0x1ea205
         )
 
-        embed.add_field(name= "Regeneration Potion - 2000 Coins", value="Regenerate the HP for 20 mins", inline= False)
+        embed.add_field(name= "Regeneration Potion - 2000 Chibucks", value="Regenerate the HP for 20 mins", inline= False)
 
         await ctx.send(embed = embed)
 
@@ -46,7 +46,7 @@ class Shop(commands.Cog):
         )
 
         
-        embed.add_field(name="Fragments", value="🪡 Universal Fragment - 300 Coins\n", inline=False)
+        embed.add_field(name="Fragments", value="🪡 Universal Fragment - 300 Chibucks\n", inline=False)
 
         crystals = ''''''
         users = await get_inventory_data()
@@ -77,7 +77,7 @@ class Shop(commands.Cog):
         if item.lower() == "universal fragment":
             users = await get_bank_data()
             if 300*amount > int(users[str(ctx.author.id)]["Wallet"]):
-                await ctx.send("Insufficient Money")
+                await ctx.send("Insufficient Chibucks")
             else:
                 users = await get_inventory_data()
                 users[str(ctx.author.id)]["Fragments"] += amount
@@ -95,7 +95,7 @@ class Shop(commands.Cog):
                     await ctx.send("The Item doesn't exists")
                     return
                 if res[1]==2:
-                    await ctx.send(f"Insufficient Money")
+                    await ctx.send(f"Insufficient Chibucks")
                     return
 
             else:

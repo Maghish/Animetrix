@@ -59,7 +59,7 @@ class Scroll(commands.Cog):
             if res[1] == 1:
                 await ctx.reply(f"There is no fruit/scroll called {item} ")
             elif res[1] == 2:
-                await ctx.reply(f"The fruit is already active!\nTry `m$fruits`")
+                await ctx.reply(f"The fruit is already active!\nTry `a!fruits`")
             elif res[1] == 3:
                 await ctx.reply(f"You don't have the fruit/scroll!")
         else:
