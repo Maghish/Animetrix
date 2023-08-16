@@ -655,11 +655,11 @@ async def claim_crystal(user, crystal_name, amount):
             index += 1
 
         if t == None:
-            obj = {"item": name_, "amount": amount, "value": value, "mode": mode, "rarity": rarity}
+            obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "rarity": rarity}
             users[str(user.id)]["Crystal"].append(obj)
 
     except:
-        obj = {"item": name_, "amount": amount, "value": value, "mode": mode, "rarity": rarity}
+        obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "rarity": rarity}
         users[str(user.id)]["Crystal"] = [obj]
 
     users[str(user.id)]["Fragments"] -= cost

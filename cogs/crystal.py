@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from emoji import emojize
 import asyncio
 from fun_config import *
 
@@ -30,11 +31,36 @@ class Crystal(commands.Cog):
     @commands.group()
     async def crystals(self, ctx):
         if ctx.invoked_subcommand == None:
-            # TODO:
-            # 1. List all the crystals that the user have
-            # 2. Display the fragments
-            ...
+            await open_inv(ctx.author)
+            user = ctx.author
+            users = await get_inventory_data()
 
+            try:
+                Crystals = users[str(user.id)]["Crystal"]
+            except:
+                Crystals = []
+
+            embed = discord.Embed(
+                title=f"{ctx.author}'s Crystals", 
+                description="This is the list of all the crystals you have ready to open. Use `a!crystals open <crystal_name>` to open the crystal! To inspect the crystal, type `a!crystals info <crystal_name>`"
+            )
+            list_of_all_crystals = ""
+            try:
+                for crystal in Crystals:
+                    name = crystal["item"]
+                    amount = crystal["amount"]
+                    emoji = crystal["emoji"]
+                    if amount < 1:
+                        pass
+                    else:
+                        list_of_all_crystals = list_of_all_crystals + f"{emojize(emoji)} ・ {name} x{amount}\n"
+                embed.add_field(name="\n", value=list_of_all_crystals)
+            except:
+                embed.add_field(name="\n", value="*You haven't obtained any crystals yet!*")
+    
+            await ctx.send(embed=embed)
+
+        
     @crystals.command()
     async def open(self, ctx,*, crystal_name):
 
