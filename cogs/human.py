@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 from fun_config import *
-from discord.ui import Button, View
+from discord.ui import Button, View, Select
 import random
 from datetime import datetime
 import math
@@ -35,7 +35,7 @@ class Human(commands.Cog):
                 while True:
                     if current >= math.ceil(6* (temp_level ** 4) / 2.5):
                         temp_level += 1
-                    else:
+                    else: 
                         break
                 temp_level = temp_level - lvl
                 await heal_human(message.author, temp_level, "Level")
@@ -55,6 +55,7 @@ class Human(commands.Cog):
     @commands.group()
     async def stats(self, ctx):
         if ctx.invoked_subcommand is None:
+            # here / stats front end 
             users = await get_human_stats()
             user = ctx.author
             health = float(users[str(user.id)]["HP"])
@@ -240,7 +241,55 @@ class Duel(commands.Cog):
             elif self.ability == "Backpack":
                 users = await get_inventory_data()
                 user = interaction.user
-                # here / backpack
+                menu_view = View()
+                potion = Select(
+                    placeholder="Select a potion to consume!",
+                    options=[])
+                for things in users[str(user.id)]["Backpack"]:
+                    attributes = await get_all_attributes(things, items_json_file, Key=["mode", "emoji"])
+                    if attributes[0] == "Shop/Potion":
+                        potion.add_option(label=things, value=things, emoji=emoji.emojize(attributes[1]))
+                        continue
+                    else:
+                        pass
+                menu_view.add_item(potion)
+        
+                await interaction.response.send_message(view=menu_view)        
+
+                async def startcall(interaction):
+                    attributes = await get_all_attributes(potion.values[0], items_json_file, Key=["mode", "value"])
+                    for things in self.outer_instance.effects:
+                        if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == [attributes[1][0], attributes[1][1], attributes[1][2]]:
+                            self.outer_instance.effects.remove({
+                                "user": things["user"],
+                                "victim": things["victim"],
+                                "amount": things["amount"],
+                                "type": things["type"],
+                                "count": things["count"]
+                            })
+
+                        else:
+                            pass
+                                
+
+                        break
+                
+                    self.outer_instance.effects.append({
+                        "user": interaction.user,
+                        "victim": self.victim,
+                        "amount": attributes[1][3],
+                        "type": [attributes[1][0], attributes[1][1], attributes[1][2]],
+                        "count": attributes[1][4]
+                    })
+
+                    self.pressed = [f"*Consumed {potion.values[0]}*", 0, 0, attributes[1][0]]
+                    await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                    self.main_view.stop()
+
+                potion.callback = startcall
+                
+                
+
             elif self.ability == "PDMG":
                 users = await get_human_stats()
                 dmg = users[str(interaction.user.id)]["PDMG"]
@@ -523,7 +572,7 @@ class Duel(commands.Cog):
 
                 button = self.Make_Button(ctx, outer_instance=self , label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=ctx.author, view=view2)
                 view2.add_item(button)
-                button = self.Make_Button(ctx, outer_instance=self, label="Backpack", style=discord.ButtonStyle.primary, emoji="🎒", custom_id="Backpack", ability="Backpack", disabled=False, victim=ctx.author, view=view2)
+                button = self.Make_Button(ctx, outer_instance=self, label="Backpack", style=discord.ButtonStyle.primary, emoji="🎒", custom_id="Backpack", ability="Backpack", disabled=False, victim=user, view=view2)
                 view2.add_item(button)
                 button = self.Make_Button(ctx, outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=ctx.author, view=view2)
                 view2.add_item(button)
@@ -971,6 +1020,7 @@ class Quests(commands.Cog):
     @commands.group()
     async def quests(self, ctx):
         if ctx.invoked_subcommand is None:
+            # here / quests front end
             ...
 
     @quests.command()

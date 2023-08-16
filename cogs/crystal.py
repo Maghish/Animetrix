@@ -92,6 +92,7 @@ class Crystal(commands.Cog):
 
     @crystals.command()
     async def info(self, ctx, crystal_id):
+        # here / info command
         ...
 
     
