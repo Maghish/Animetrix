@@ -1,3 +1,4 @@
+from typing import Any
 import discord
 from discord.ext import commands
 from fun_config import *
@@ -122,8 +123,50 @@ class Scroll(commands.Cog):
         await ctx.send(embed = embed)
         
 
+class Backpack(commands.Cog):
+
+    def __init__(self, client: commands.Bot):
+        self.client = client
+
+
+    @commands.group()
+    async def backpack(self, ctx):
+        ...
+
+    @backpack.command()
+    async def add(self, ctx,*, item_name):
+        
+        res = await sep_int_and_str(item_name)   
+        item, amount = res[0].rstrip(), res[1]
+
+        res = await change_backpack(ctx.author, item, amount, "Add")
+
+        if not res[0]:
+            if res[1] == 1:
+                await ctx.send("The item does not exist!")
+            elif res[1] == 2:
+                await ctx.send("You don't have that item!")
+        else:
+            await ctx.send(f"Successfully added {res[2]}x {res[1]} to your backpack 🎒")
+
+    @backpack.command()
+    async def remove(self, ctx,*, item_name):
+        res = await sep_int_and_str(item_name)   
+        item, amount = res[0].rstrip(), res[1]
+
+        res = await change_backpack(ctx.author, item, amount, "Remove")
+
+        if not res[0]:
+            if res[1] == 1:
+                await ctx.send("The item does not exist!")
+            elif res[1] == 2:
+                await ctx.send("You don't have that item!")
+        else:
+            await ctx.send(f"Successfully removed {res[2]}x {res[1]} from your backpack 🎒")
+
 
 async def setup(client:commands.Bot) -> None:
    await client.add_cog(Scroll(client))
+   await client.add_cog(Backpack(client))
 
 

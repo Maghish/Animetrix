@@ -10,7 +10,7 @@ import emoji
 
 
 class Human(commands.Cog):
-
+    
     def __init__(self, client: commands.Bot):
         self.client = client
 
@@ -245,48 +245,71 @@ class Duel(commands.Cog):
                 potion = Select(
                     placeholder="Select a potion to consume!",
                     options=[])
+                t = 0
                 for things in users[str(user.id)]["Backpack"]:
-                    attributes = await get_all_attributes(things, items_json_file, Key=["mode", "emoji"])
-                    if attributes[0] == "Shop/Potion":
-                        potion.add_option(label=things, value=things, emoji=emoji.emojize(attributes[1]))
+                    if things["mode"] == "Shop/Potion" and things["amount"] > 0:
+                        potion.add_option(label=things["item"], value=things["item"], emoji=emoji.emojize(things["emoji"]))
+                        t = 1
                         continue
                     else:
                         pass
-                menu_view.add_item(potion)
-        
-                await interaction.response.send_message(view=menu_view)        
+                if t == 0:
+                    users = await get_human_stats()
+                    dmg = users[str(interaction.user.id)]["PDMG"]
+                    chakra = 0
+                    dmg = random.randint(int(dmg/2), int(dmg))
+                    await duel_stats_change(self.victim, dmg, "HP")
+                    await duel_stats_change(interaction.user, chakra, "Energy")
+                    self.pressed = ["Physical Damage", chakra, dmg, "*No effects inflicted*"]
+                    await interaction.response.send_message(f"You do not have any items in your backpack! Physical Damage has been choosed instead.\nGet back to {self.ctx.channel.mention}")
+                else:
+                    menu_view.add_item(potion)
+                    await interaction.response.send_message(view=menu_view)        
 
-                async def startcall(interaction):
-                    attributes = await get_all_attributes(potion.values[0], items_json_file, Key=["mode", "value"])
-                    for things in self.outer_instance.effects:
-                        if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == [attributes[1][0], attributes[1][1], attributes[1][2]]:
-                            self.outer_instance.effects.remove({
-                                "user": things["user"],
-                                "victim": things["victim"],
-                                "amount": things["amount"],
-                                "type": things["type"],
-                                "count": things["count"]
-                            })
+                    async def startcall(interaction):
+                        attributes = await get_all_attributes(potion.values[0], items_json_file, Key=["mode", "value"])
+                        for things in self.outer_instance.effects:
+                            if things["user"] == interaction.user and things["victim"] == self.victim and things["type"] == [attributes[1][0], attributes[1][1], attributes[1][2]]:
+                                self.outer_instance.effects.remove({
+                                    "user": things["user"],
+                                    "victim": things["victim"],
+                                    "amount": things["amount"],
+                                    "type": things["type"],
+                                    "count": things["count"]
+                                })
 
-                        else:
-                            pass
-                                
+                            else:
+                                pass
+                                    
 
-                        break
-                
-                    self.outer_instance.effects.append({
-                        "user": interaction.user,
-                        "victim": self.victim,
-                        "amount": attributes[1][3],
-                        "type": [attributes[1][0], attributes[1][1], attributes[1][2]],
-                        "count": attributes[1][4]
-                    })
+                            break
+                    
+                        self.outer_instance.effects.append({
+                            "user": interaction.user,
+                            "victim": self.victim,
+                            "amount": attributes[1][3],
+                            "type": [attributes[1][0], attributes[1][1], attributes[1][2]],
+                            "count": attributes[1][4]
+                        })
 
-                    self.pressed = [f"*Consumed {potion.values[0]}*", 0, 0, attributes[1][0]]
-                    await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
-                    self.main_view.stop()
+                        users = await get_inventory_data()
+                        index = 0
+                        for things in users[str(interaction.user.id)]["Backpack"]:
+                            if things["item"] == potion.values[0]:
+                                users[str(interaction.user.id)]["Backpack"][index]["amount"] -= 1
+                        
+                                with open(inventory_json_file, "w") as json_file:
+                                    json.dump(users, json_file, indent=1)
 
-                potion.callback = startcall
+                                break
+                            else:
+                                pass
+
+                        self.pressed = [f"*Consumed {potion.values[0]}*", 0, 0, attributes[1][0]]
+                        await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                        self.main_view.stop()
+
+                    potion.callback = startcall
                 
                 
 

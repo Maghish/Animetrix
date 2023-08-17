@@ -82,8 +82,9 @@ async def open_inv(user):
         users[str(user.id)] = {}
         users[str(user.id)]["Inventory"] = "None"
         users[str(user.id)]["Food"] = "None"
+        users[str(user.id)]["Potion"] = "None"
         users[str(user.id)]["Crystal"] = "None"
-        users[str(user.id)]["Backpack"] = "None"
+        users[str(user.id)]["Backpack"] = []
         users[str(user.id)]["Fragments"] = 0
 
 
@@ -252,6 +253,9 @@ async def buy_this(user,item_name,amount):
                 if mode.startswith("Shop"): 
                     if mode.endswith("Food"):
                         format = "Food"
+                        selected = False
+                    elif mode.endswith("Potion"):
+                        format = "Potion"
                         selected = False
                     else:
                         format = "Inventory"   
@@ -768,4 +772,79 @@ async def open_crystal(user, crystal_name):
         
 
         
+async def change_backpack(user, item, amount, action):
     
+    if action == "Add":
+        format1 = "Potion"
+        format2 = "Backpack"
+    else:
+        format1 = "Backpack"
+        format2 = "Potion"
+    # Check if the item exists
+    name_ = None
+    with open(items_json_file, "r") as json_file:
+        data = json.load(json_file)
+        data = (data)
+        for items in data:
+            if items["itemname"].lower() == item.lower() and items["mode"] == "Shop/Potion":
+                name_ = items["itemname"] 
+                mode = items["mode"]
+                emoji = items["emoji"]
+                value = items["value"] 
+                break
+            else:
+                pass
+
+    if name_ == None:
+        return [False, 1]
+
+            
+    # Check if the user has it
+    users = await get_inventory_data()
+    try:
+        t = None
+        index = 0
+        for things in users[str(user.id)][format1]:
+            if things["item"] == name_:
+                if things["amount"] >= amount:
+                    t = 1
+                    users[str(user.id)][format1][index]["amount"] -= amount
+
+                    with open(inventory_json_file, "w") as json_file:
+                        json.dump(users, json_file, indent=1)
+
+                    break
+                else:
+                    return [False, 2]
+            else:
+                pass
+
+        if t == None:
+            return [False, 2]
+        
+    except:
+        return [False, 2]
+
+    try:
+        t = None
+        index = 0
+        for things in users[str(user.id)][format2]:
+            if things["item"] == name_:
+                t = 1
+                users[str(user.id)][format2][index]["amount"] += amount
+
+                with open(inventory_json_file, "w") as json_file:
+                    json.dump(users, json_file, indent=1)
+            else:
+                pass
+        if t == None:
+            obj = {"item": name_, "amount": amount, "mode": mode, "emoji": emoji, "value": value}
+            users[str(user.id)][format2].append(obj)
+    except:
+        obj = {"item": name_, "amount": amount, "mode": mode, "emoji": emoji, "value": value}
+        users[str(user.id)][format2] = [obj]
+
+    with open(inventory_json_file, "w") as json_file:
+        json.dump(users, json_file, indent=1)
+
+    return [True, name_, amount]
