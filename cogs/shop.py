@@ -33,7 +33,7 @@ class Shop(commands.Cog):
         color= 0x1ea205
         )
 
-        embed.add_field(name= "Regeneration Potion - 2000 Chibucks", value="Regenerate the HP for 20 mins", inline= False)
+        embed.add_field(name= "Regeneration Potion - 2000 Chibucks <:chibucks:1141752496671445084>", value="Regenerate the HP for 20 mins", inline= False)
 
         await ctx.send(embed = embed)
 
@@ -46,7 +46,7 @@ class Shop(commands.Cog):
         )
 
         
-        embed.add_field(name="Fragments", value="🪡 Universal Fragment - 300 Chibucks\n", inline=False)
+        embed.add_field(name="Fragments", value="🪡 Universal Fragment - 300 Chibucks <:chibucks:1141752496671445084>\n", inline=False)
 
         crystals = ''''''
         users = await get_inventory_data()

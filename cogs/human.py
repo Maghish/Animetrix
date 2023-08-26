@@ -143,13 +143,64 @@ class Duel(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
         self.effects = []
+        self.spawn_channel = []
         self.effect_loop.start()
+        self.boss_spawn.start()
 
     
 
 
     async def cog_unload(self):
         self.effect_loop.cancel()
+        self.boss_spawn.cancel()
+
+
+    @tasks.loop(seconds=15)
+    async def boss_spawn(self):
+        for guild in self.client.guilds:
+            for things in self.spawn_channel:
+                if things["guild_id"] == guild.id:
+                    channel = self.client.get_guild(int(things["guild_id"])).get_channel(int(things["channel_id"]))
+                    list_of_boss = []
+                    with open(scroll_data_json_file, "r") as json_file:
+                        data = json.load(json_file)
+                        data = (data)
+                        for items in data:
+                            if items["mode"] == "BOSS/Quests":
+                                list_of_boss.append(items["itemname"])
+                                continue
+                            else:
+                                pass
+                    selected_boss = random.choice(list_of_boss)
+                    attributes = await get_all_attributes(selected_boss, scroll_data_json_file, Key=["itemname", "img", "level", "stats", "rarity"])
+                    embed = discord.Embed(
+                        title=f"{attributes[0]} has appeared!",
+                        description="This is a boss! A Boss has high HP and High Chakra and once defeated, it drops insane rewards! To battle the boss click the button below!"
+                    )
+                    embed.set_image(url=attributes[1])
+                    embed.add_field(name="Stats:", value=f"⬆️ **Level -** {attributes[2]}\n❤️ **HP -** {attributes[3]['HP']}\n⚡ **Chakra -** {attributes[3]['chakra']}\n✨ **Rarity -** {attributes[4]}")
+                    the_view = View()
+                    the_button = Button(label="Challenge", style=discord.ButtonStyle.danger, emoji="⚔️")
+                    the_view.add_item(the_button)                    
+                    
+                    async def startcall(interaction):
+                        await interaction.response.send_message("The Duel is going to start!", ephemeral=True)
+                        await self.boss_fight(channel, interaction.user, attributes[0])
+                        the_view.stop()
+
+                    the_button.callback = startcall
+                    await channel.send(embed=embed, view=the_view)
+                    
+                    
+                    break
+                else:
+                    pass
+
+
+
+
+
+
 
     @tasks.loop(seconds=3)
     async def effect_loop(self):
@@ -227,7 +278,10 @@ class Duel(commands.Cog):
         async def callback(self, interaction):
             if self.ability == "Quit":
                 self.quit = True
-                await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                try:
+                    await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                except:
+                    await interaction.response.send_message(f"Get back to {self.ctx.mention}")
             elif self.ability == "Recharge":
                 users = await get_human_stats()
                 user = interaction.user       
@@ -237,7 +291,10 @@ class Duel(commands.Cog):
                     chakra = max_chakra - int(users[str(user.id)]["Energy"])
                 await duel_stats_change(user, -1*chakra, "Energy")
                 self.pressed = ["Recharge Chakra", chakra, 0, "*No effects inflicted*"]
-                await interaction.response.send_message(f"⚡{chakra} recharged!\nGet back to {self.ctx.channel.mention}")
+                try:
+                    await interaction.response.send_message(f"⚡{chakra} recharged!\nGet back to {self.ctx.channel.mention}")
+                except:
+                    await interaction.response.send_message(f"⚡{chakra} recharged!\nGet back to {self.ctx.mention}")
             elif self.ability == "Backpack":
                 users = await get_inventory_data()
                 user = interaction.user
@@ -335,7 +392,10 @@ class Duel(commands.Cog):
                             self.victim -= DMG
                         await duel_stats_change(interaction.user, chakra, "Energy")
                         self.pressed = ["Physical Damage", chakra, dmg, "*No effects inflicted*"]
-                        await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                        try:
+                            await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                        except:
+                            await interaction.response.send_message(f"Get back to {self.ctx.mention}")
                     except:
                         await interaction.response.send_message("Something went wrong!")
             else:
@@ -458,18 +518,43 @@ class Duel(commands.Cog):
                             self.victim -= DMG
                         await duel_stats_change(interaction.user, chakra, "Energy")
                         self.pressed = [ability_name, chakra, DMG, "*No effects inflicted*"] 
-                        await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                        try:
+                            await interaction.response.send_message(f"Get back to {self.ctx.channel.mention}")
+                        except:
+                            await interaction.response.send_message(f"Get back to {self.ctx.mention}")
                     except:
+
                         await interaction.response.send_message("Something went wrong!")
 
             
             self.main_view.stop()
 
 
-
     
-
+    @commands.group()
+    async def config(self, ctx):
+        if ctx.invoked_subcommand is None:
+            ...
         
+    @config.command()
+    @commands.has_permissions(manage_channels=True)
+    async def spawn(self, ctx, channel_id):
+        res = self.client.get_guild(int(ctx.guild.id)).get_channel(int(channel_id))
+        if res == None:
+            await ctx.reply("Invalid channel!")
+        else:
+            for guild in self.spawn_channel:
+                if guild["guild_id"] == ctx.guild.id:
+                    self.spawn_channel.remove({"guild_id": guild["guild_id"], "channel_id": guild["channel_id"]})
+                else:
+                    pass
+        
+            self.spawn_channel.append({"guild_id": ctx.guild.id, "channel_id": channel_id})
+            await ctx.send("Configuring Boss Spawning channel")
+
+
+
+
     @commands.command()
     async def duel(self, ctx, user: discord.Member):
         if user == ctx.author:
@@ -940,7 +1025,7 @@ class Duel(commands.Cog):
                                 user2_last_move = [ability[0], 0, ability[1], "*No effects inflicted*"]
                                 
                                 
-                                round += 1
+                        round += 1
         if loop[0] == False:
             if loop[1] != ctx.author:
                 await ctx.reply("You died!")
@@ -1030,8 +1115,229 @@ class Duel(commands.Cog):
                 
         elif loop[0] == None:
             await ctx.reply("You left the battle!")
-    
 
+
+    async def boss_fight(self, channel, user, boss):
+        await asyncio.sleep(2)
+        loop = True
+        npc_current_health = None
+        round = 1
+        ALL_STUFF = await create_brawl_npc(user, boss)
+        while loop is True:
+            embed = discord.Embed(
+                title=f"{user.global_name} vs {boss} [Round {round}]",
+                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost. Sadly Players can not inflict effects to NPCS and so do they."
+            )
+
+            view2 = View()
+
+            health_bar = await make_bars(user, "HP", "MaxHP", "🟥", "⬛", 6)
+            energy_bar = await make_bars(user, "Energy", "MaxEnergy", "🟦", "⬛", 5)
+
+            FIELD_VALUE = f"HP {health_bar}\nChakra {energy_bar}\n\n"
+            for abilities in ALL_STUFF[0][4]:
+                FIELD_VALUE = FIELD_VALUE + f"{abilities[1]} {abilities[0]} | {abilities[3]}\n"
+
+            if round == 1:
+                    pass
+            else:
+                FIELD_VALUE = FIELD_VALUE + f"\n**Last Round**\n"
+                FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user1_last_move[0]}\n💥 **Damage: ** {user1_last_move[2]} \n⚡ **Chakra:** {user1_last_move[1]}\n🍻 **Effect:** {user1_last_move[3]}\n"
+
+
+
+            embed.add_field(name=f"{user} **[{ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
+
+            # Health Bar
+            if npc_current_health is None: 
+                npc_current_health = ALL_STUFF[1][6]["HP"]
+            else:
+                npc_current_health = npc_current_health
+    
+            health_bar = await make_bars(user, npc_current_health, ALL_STUFF[1][6]["HP"], "🟥", "⬛", 6)
+            # Static bar for energy bar
+            energy_bar = await make_bars(user, ALL_STUFF[1][6]["chakra"], ALL_STUFF[1][6]["chakra"], "🟦", "⬛", 5)
+            # Add abilities in the embed
+            FIELD_VALUE = f"HP {health_bar}\nChakra {energy_bar}\n\n"
+            for abilities in ALL_STUFF[1][4]:
+                FIELD_VALUE = FIELD_VALUE + f"{abilities['emoji']} {abilities['ability_name']} | {abilities['chakra']}\n"
+
+            if round == 1:
+                    pass
+            else:
+                FIELD_VALUE = FIELD_VALUE + f"\n**Last Round**\n"
+                FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user2_last_move[0]}\n💥 **Damage: ** {user2_last_move[2]} \n⚡ **Chakra:** {user2_last_move[1]}\n🍻 **Effect:** {user2_last_move[3]}\n"
+
+            
+            embed.add_field(name=f"{boss}", value=FIELD_VALUE)
+            # Send the embed
+            await channel.send(embed=embed)
+            # Wait 5 seconds and send ability wheel in the DM
+            await asyncio.sleep(5)
+
+            users = await get_human_stats()
+            msg = f"⚔️ Attack:\nDamage - {users[str(user.id)]['PDMG']}\nChakra - 0\n"
+            button = self.Make_Button(channel,outer_instance=self , label="Attack", style=discord.ButtonStyle.green, emoji="⚔️", custom_id="Attack", ability="PDMG", disabled=False, victim=npc_current_health, view=view2)
+            view2.add_item(button)
+                
+            for abilities in ALL_STUFF[0][4]:
+                if abilities[4] > ALL_STUFF[0][5]:
+                    button = self.Make_Button(channel,outer_instance=self , label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=True, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)
+                    view2.add_item(button)
+                    msg = msg + f"{abilities[1]} {abilities[0]} - **Locked**:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
+                else:
+                    if users[str(user.id)]["Energy"] < abilities[3]:
+                        button = self.Make_Button(channel,outer_instance=self , label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=True, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)    
+                        view2.add_item(button)
+                        msg = msg + f"{abilities[1]} {abilities[0]} - **Low Chakra**:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
+                    else:
+                        button = self.Make_Button(channel,outer_instance=self , label=abilities[0], style=discord.ButtonStyle.green, emoji=emoji.emojize(abilities[1]), custom_id=abilities[0], disabled=False, ability=[ALL_STUFF[0][2],abilities[0]], victim=npc_current_health, view=view2)    
+                        view2.add_item(button)
+                        msg = msg + f"{abilities[1]} {abilities[0]}:\nDamage - {abilities[2]}\nChakra - {abilities[3]}\n"
+
+            button = self.Make_Button(channel,outer_instance=self , label="Recharge", style=discord.ButtonStyle.primary, emoji="⚡", custom_id="Recharge", ability="Recharge", disabled=False, victim=npc_current_health, view=view2)
+            view2.add_item(button)
+            button = self.Make_Button(channel,outer_instance=self , label="Declare", style=discord.ButtonStyle.danger, emoji="🏳️", custom_id="Declare", ability="Quit", disabled=False, victim=npc_current_health, view=view2)
+            view2.add_item(button)
+            
+
+            msg = msg + "Choose an ability below to perform!"
+            await user.send(msg,view=view2)
+
+            # Await for the ability wheel response and randomly choose an ability from the NPC's ability wheel
+            set_of_abilities = []
+            for abilities in ALL_STUFF[1][4]:
+                set_of_abilities.append([abilities["ability_name"], abilities["dmg"]])
+            ability = random.choice(set_of_abilities)
+            ability[1] = random.randint(int(ability[1])/2, int(ability[1]))
+            await duel_stats_change(user, ability[1], "HP")
+
+            # Change stats
+            res = await view2.wait()
+            if res is True or res is False:
+                if [x for x in view2.children if x.custom_id][int(len([x for x in view2.children if x.custom_id])) - 1].quit == True:
+                    loop = [None, user, boss]
+                else:
+                    users = await get_human_stats()
+                    if users[str(user.id)]["HP"] == 0:
+                        loop = [False, boss, user]
+                    else:
+                        for index in range(0, len([x for x in view2.children if x.custom_id])):
+                            if [x for x in view2.children if x.custom_id][index].victim <= 0:
+                                loop = [False, user, boss]
+                                break
+                            else:
+                                if [x for x in view2.children if x.custom_id][index].victim < npc_current_health:
+                                    npc_current_health = [x for x in view2.children if x.custom_id][index].victim
+                                    continue
+                                else:
+                                    pass
+
+                                
+                                for buttons in [x for x in view2.children if x.custom_id]:
+                                    
+                                    if buttons.pressed:
+                                        user1_last_move = buttons.pressed
+                                        break
+                                    else:
+                                        pass
+
+                                user2_last_move = [ability[0], 0, ability[1], "*No effects inflicted*"]
+                                
+                                
+                        round += 1
+
+        if loop[0] == False:
+            if loop[1] != user:
+                await channel.send(f"{user.mention} died in the battle against {boss}!")
+            else:
+                exp = ALL_STUFF[1][5][0]/2
+                await channel.send(f"{user.mention} defeated {loop[2]} and gained {exp}x EXP")
+                await heal_human(user, exp, "exp")
+                await update_bank(user, ALL_STUFF[1][5][1], "Wallet")
+                
+                users = await get_human_stats()
+                index = 0
+                try:
+                    for thing in users[str(loop[1].id)]["Quests"]:
+                        if thing["NPC"] == loop[2]:
+                            old_amt = thing["amount"]
+                            if old_amt - 1 == 0:
+                                await channel.send(f"You have completed the '{thing['quest_name']}' Quest!\nPay a visit to `a!quests` again to challenge more quests")
+                            
+                                users[str(loop[1].id)]["Quests"][index]["amount"] -= 1
+
+                                with open(human_json_file, "w") as json_file:
+                                    json.dump(users, json_file, indent=1)
+                                exp = (exp*2)*8
+                                break
+                            
+                            elif (old_amt - 1) < 0:
+                                pass
+                            else:
+                                users[str(loop[1].id)]["Quests"][index]["amount"] -= 1
+
+                                with open(human_json_file, "w") as json_file:
+                                    json.dump(users, json_file, indent=1)
+                                exp = (exp*2)*8
+                                break
+                        else:
+                            index += 1
+                            pass
+                except:
+                    pass
+
+
+
+                users = await get_scroll_data()
+                index = 0
+                lvl = 0
+                for thing in users[str(loop[1].id)]["Scrolls"]:
+                    active = thing["active"]
+                    if active is True:
+                        lvl = thing["Level"]
+                        old_exp = thing["exp"]
+                        users[str(loop[1].id)]["Scrolls"][index]["exp"] += exp
+
+                        with open(scroll_json_file, "w") as json_file:
+                            json.dump(users, json_file, indent=1)
+
+                        break
+                    else:
+                        index += 1
+                        pass
+                
+                if (old_exp + exp) >= math.ceil(6* (lvl ** 4) / 2.5):
+                    
+                    index = 0
+                    for thing in users[str(loop[1].id)]["Scrolls"]:
+                        active = thing["active"]
+                        lvl = thing["Level"]
+                        if active == True:
+                            
+                            temp_level = lvl
+                            while True:
+                                if int(old_exp + exp) >= math.ceil(6* (temp_level ** 4) / 2.5):
+                                    temp_level += 1
+                                else:
+                                    break
+                            users[str(loop[1].id)]["Scrolls"][index]["Level"] = temp_level
+
+                            with open(scroll_json_file, "w") as json_file:
+                                json.dump(users, json_file, indent=1)
+
+                            await channel.send(f"Your fruit leveled up! from {lvl} to {temp_level}")
+                            break
+                        else:
+                            index += 1
+                            pass
+                
+                
+                
+        elif loop[0] == None:
+            await channel.send(f"{user.mention} left the battle against {boss}!")
+
+        
 
     
 class Quests(commands.Cog):
@@ -1040,7 +1346,7 @@ class Quests(commands.Cog):
         self.client = client
               
 
-    @commands.group()
+    @commands.group(aliases = ["q"])
     async def quests(self, ctx):
         if ctx.invoked_subcommand is None:
             # here / quests front end
@@ -1057,7 +1363,7 @@ class Quests(commands.Cog):
             elif res[1] == 1:
                 await ctx.reply("Quest conditions not met!\nPlease choose a lower level task than you and try again!")
         else:
-            await ctx.reply("Quest activated!")
+            await ctx.reply(f"'Defeat {res[1]}' Quest has been activated!")
 
 
 

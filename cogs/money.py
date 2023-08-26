@@ -38,7 +38,7 @@ class economy(commands.Cog):
             walletamt = users[str(user.id)]["Wallet"]
             em = discord.Embed(
                 title= (f"{user.name}'s leftovers"),color= 0xcc00ff)
-            em.add_field(name = "Wallet", value = f"{walletamt:,} Chibucks")
+            em.add_field(name = "Wallet", value = f"{walletamt:,} Chibucks <:chibucks:1141752496671445084>")
             em.set_thumbnail(url = ctx.author.avatar)
             await ctx.send(embed = em)
 
@@ -82,7 +82,7 @@ class economy(commands.Cog):
                 return
             await update_bank(ctx.author,-1* int(amount), "Wallet"),
             await update_bank(member, amount, "Wallet")
-            await ctx.reply (f'{amount} Chibucks has been transferred from {ctx.author} to {member}!')
+            await ctx.reply (f'{amount} Chibucks <:chibucks:1141752496671445084> has been transferred from {ctx.author} to {member}!')
 
     
 

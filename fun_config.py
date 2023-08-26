@@ -146,8 +146,22 @@ async def challenge(user, quest_index):
                 if quest_index == index:
                     name = things["itemname"]
                     name_ = name
-                    emoji = things["emoji"]
+                    img = things["img"]
                     level = things["level"]
+                    amount = 8
+                    break
+                else:
+                    index += 1
+                    pass
+            elif mode == "BOSS/Quests":
+                quest_index = int(quest_index)
+                # Find the matching quest_index
+                if quest_index == index:
+                    name = things["itemname"]
+                    name_ = name
+                    img = things["img"]
+                    level = things["level"]
+                    amount = 1
                     break
                 else:
                     index += 1
@@ -162,24 +176,40 @@ async def challenge(user, quest_index):
 
 
     users = await get_human_stats()
-    
+
     if level > users[str(user.id)]["Level"]:
         return [False, 1]
 
-    # Add the quests to the human stats file
-
     try:
-        obj = {"quest_name": f"Defeat {name}", "NPC": name, "emoji": emoji, "level": level, "amount": 8}
-        users[str(user.id)]["Quests"].append(obj)
+        index = 0
+        t = None
+        for things in users[str(user.id)]["Quests"]:
+            if things["quest_name"] == f"Defeat {name}":
+                users[str(user.id)]["Quests"][index]["amount"] = int(amount)
+
+
+                with open(human_json_file, "w") as json_file:
+                    json.dump(users, json_file, indent= 1)
+
+                t = 1
+
+            else:
+                index += 1
+                pass
+        if t == None:
+            obj = {"quest_name": f"Defeat {name}", "NPC": name, "img": img, "level": level, "amount": int(amount)}
+            users[str(user.id)]["Quests"].append(obj)
     except:
-        obj = {"quest_name": f"Defeat {name}", "NPC": name, "emoji": emoji, "level": level, "amount": 8}
-        users[str(user.id)]["Quests"] = [obj]        
+        obj = {"quest_name": f"Defeat {name}", "NPC": name, "img": img, "level": level, "amount": int(amount)}
+        users[str(user.id)]["Quests"] = [obj]  
+
+              
 
     with open(human_json_file,"w") as f:
         json.dump(users,f, indent= 1)
 
 
-    return [True,"Worked"]
+    return [True,name]
 
 
 
@@ -451,7 +481,7 @@ async def create_brawl_npc(user, npc):
             for ability in thing["ability"]:
                 user_fruit_abilities.append([ability["ability_name"], ability["emoji"], ability["dmg"], ability["chakra"], ability["level"], ability["repeat"]])
 
-    attributes_for_npc = await get_all_attributes(npc, scroll_data_json_file, Key=["mode", "emoji", "level", "img", "ability", "rewards", "stats"])
+    attributes_for_npc = await get_all_attributes(npc, scroll_data_json_file, Key=["mode", "itemname", "level", "img", "ability", "rewards", "stats"])
 
     return [[user_dmg, user_level, user_fruit_name, user_fruit_emoji, user_fruit_abilities, user_fruit_level], [attributes_for_npc[0], attributes_for_npc[1], attributes_for_npc[2], attributes_for_npc[3], attributes_for_npc[4], attributes_for_npc[5], attributes_for_npc[6]]]
 
