@@ -1349,8 +1349,109 @@ class Quests(commands.Cog):
     @commands.group(aliases = ["q"])
     async def quests(self, ctx):
         if ctx.invoked_subcommand is None:
-            # here / quests front end
-            ...
+            all_quests = []
+            users = await get_human_stats()
+            user = ctx.author
+            with open(scroll_data_json_file, "r") as json_file:
+                data = json.load(json_file)
+                data = (data)
+                for items in data:
+                    if items["mode"].endswith("Quests"):
+                        t = None
+                        try:
+                            for things in users[str(user.id)]["Quests"]:
+                                if things["quest_name"] == f"Defeat {items['itemname']}":
+                                    if things["amount"] > 0:
+                                        amount = things["amount"]
+                                        t = 1
+                                    else:
+                                        break
+                                else:
+                                    pass
+                        except:
+                            t = None
+                        
+                        if t == None:
+                            if items["level"] <= users[str(user.id)]["Level"]:
+                                if items["mode"].startswith("BOSS"): 
+                                    all_quests.append([items["itemname"], True, "BOSS"])
+                                elif items["mode"].startswith("NPC"):
+                                    all_quests.append([items["itemname"], True, "NPC"])
+                                continue
+                            else:
+                                if items["mode"].startswith("BOSS"):
+                                    all_quests.append([items["itemname"], False, "BOSS"])
+                                elif items["mode"].startswith("NPC"):
+                                    all_quests.append([items["itemname"], False, "NPC"])
+                                continue
+                        else:
+                            if items["mode"].startswith("BOSS"): 
+                                all_quests.append([items["itemname"], None, "BOSS"])
+                            elif items["mode"].startswith("NPC"):
+                                all_quests.append([items["itemname"], None, "NPC"])
+                    else:
+                        pass
+            
+            embed = discord.Embed(
+                title="NPC Quests",
+                description="Quests are basically like tasks which will keep track on your NPC duels and if defeat the respective NPC mentioned in the quest, then you will be heavily rewarded including Chibucks, Universal Shards...! You can simply use `a!quests challenge <Quest_Index>`. Remember, you can challenge quests which have lower level than you or equal level!"
+            )
+
+            field_value = ""
+            index = 0
+            for quest in all_quests:
+                index += 1
+                if quest[1] is None:
+                    attributes = await get_all_attributes(quest[0], scroll_data_json_file, Key=["level", "rarity", "rewards"])
+                    if quest[2] == "BOSS":
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x{amount} Left・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                    else:
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x{amount} Left・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                    continue
+                else:
+                    pass
+            if field_value == "":
+                field_value = "*No Quests*"
+            embed.add_field(name="Active Quests", value=field_value, inline=False)
+
+
+
+            field_value = ""
+            index = 0
+            for quest in all_quests:
+                index += 1
+                if quest[1] is True and quest[0] not in all_quests:
+                    attributes = await get_all_attributes(quest[0], scroll_data_json_file, Key=["level", "rarity", "rewards"])
+                    if quest[2] == "BOSS":
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x1・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                    else:
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                    continue
+                else:
+                    pass
+            if field_value == "":
+                field_value = "*No Quests*"
+            embed.add_field(name="Available Quests", value=field_value, inline=False)
+
+
+            field_value = ""
+            index = 0
+            for quest in all_quests:
+                index += 1
+                if quest[1] is False and quest[0] not in all_quests:
+                    attributes = await get_all_attributes(quest[0], scroll_data_json_file, Key=["level", "rarity"])
+                    if quest[2] == "BOSS":
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x1・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                    else:
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                    continue
+                else:
+                    pass
+            if field_value == "":
+                field_value = "*No Quests*"
+            embed.add_field(name="Unavailable Quests", value=field_value, inline=False)
+            await ctx.send(embed=embed)
+
 
     @quests.command()
     async def challenge(self, ctx, quest_index):
