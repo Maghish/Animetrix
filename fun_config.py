@@ -484,8 +484,8 @@ async def create_brawl_npc(user, npc):
     attributes_for_npc = await get_all_attributes(npc, scroll_data_json_file, Key=["mode", "itemname", "level", "img", "ability", "rewards", "stats"])
 
     return [[user_dmg, user_level, user_fruit_name, user_fruit_emoji, user_fruit_abilities, user_fruit_level], [attributes_for_npc[0], attributes_for_npc[1], attributes_for_npc[2], attributes_for_npc[3], attributes_for_npc[4], attributes_for_npc[5], attributes_for_npc[6]]]
-
-
+    
+    
 async def make_bars(user, mode1, mode2, square1:str, square2:str, healthDashes):
     
     users = await get_human_stats()

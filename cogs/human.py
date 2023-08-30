@@ -1121,6 +1121,7 @@ class Duel(commands.Cog):
         await asyncio.sleep(2)
         loop = True
         npc_current_health = None
+        npc_current_energy = None
         round = 1
         ALL_STUFF = await create_brawl_npc(user, boss)
         while loop is True:
@@ -1151,12 +1152,14 @@ class Duel(commands.Cog):
             # Health Bar
             if npc_current_health is None: 
                 npc_current_health = ALL_STUFF[1][6]["HP"]
+                npc_current_energy = ALL_STUFF[1][6]["chakra"]
             else:
                 npc_current_health = npc_current_health
+                npc_current_energy = npc_current_energy
     
             health_bar = await make_bars(user, npc_current_health, ALL_STUFF[1][6]["HP"], "🟥", "⬛", 6)
             # Static bar for energy bar
-            energy_bar = await make_bars(user, ALL_STUFF[1][6]["chakra"], ALL_STUFF[1][6]["chakra"], "🟦", "⬛", 5)
+            energy_bar = await make_bars(user, npc_current_energy, ALL_STUFF[1][6]["chakra"], "🟦", "⬛", 5)
             # Add abilities in the embed
             FIELD_VALUE = f"HP {health_bar}\nChakra {energy_bar}\n\n"
             for abilities in ALL_STUFF[1][4]:
@@ -1205,12 +1208,38 @@ class Duel(commands.Cog):
             await user.send(msg,view=view2)
 
             # Await for the ability wheel response and randomly choose an ability from the NPC's ability wheel
-            set_of_abilities = []
-            for abilities in ALL_STUFF[1][4]:
-                set_of_abilities.append([abilities["ability_name"], abilities["dmg"]])
-            ability = random.choice(set_of_abilities)
-            ability[1] = random.randint(int(ability[1])/2, int(ability[1]))
-            await duel_stats_change(user, ability[1], "HP")
+            if npc_current_energy <= 0:
+                amount = random.randint(ALL_STUFF[1][6]["chakra"]/2, ALL_STUFF[1][6]["chakra"])
+                ability = ["Recharge Chakra",0,amount]
+                npc_current_energy += amount
+            else:
+                set_of_abilities = []
+                if npc_current_energy < ALL_STUFF[1][6]["chakra"]:
+                    set_of_abilities.append(["Recharge Chakra",0,ALL_STUFF[1][6]["chakra"]])
+                else:
+                    pass
+
+                for abilities in ALL_STUFF[1][4]:
+                    if abilities["chakra"] <= npc_current_energy:
+                        set_of_abilities.append([abilities["ability_name"], abilities["dmg"], abilities["chakra"]])
+                        continue
+                    else:
+                        pass
+                ability = random.choice(set_of_abilities)
+                if ability[0] == "Recharge Chakra":
+                    amount = random.randint(ALL_STUFF[1][6]["chakra"]/2, ALL_STUFF[1][6]["chakra"])
+                    if (amount+npc_current_energy) > ALL_STUFF[1][6]["chakra"]: 
+                        npc_current_energy = amount
+                        amount = ALL_STUFF[1][6]["chakra"]
+                    else:
+                        npc_current_energy += amount
+                    ability = ["Recharge Chakra",0,amount]
+                else:
+                    ability[1] = random.randint(int(ability[1])/2, int(ability[1]))
+                    await duel_stats_change(user, ability[1], "HP")
+                    npc_current_energy -= ability[2]
+
+                print(set_of_abilities)
 
             # Change stats
             res = await view2.wait()
@@ -1242,7 +1271,7 @@ class Duel(commands.Cog):
                                     else:
                                         pass
 
-                                user2_last_move = [ability[0], 0, ability[1], "*No effects inflicted*"]
+                                user2_last_move = [ability[0], ability[2], ability[1], "*No effects inflicted*"]
                                 
                                 
                         round += 1
