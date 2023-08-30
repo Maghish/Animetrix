@@ -759,7 +759,7 @@ async def open_crystal(user, crystal_name):
                     pass
             else:
                 pass
-    
+            
     # Then randomly pick the scrolls 
     selected_scrolls = []
 

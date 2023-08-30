@@ -538,6 +538,7 @@ class Duel(commands.Cog):
 
 
     @commands.command()
+    @commands.cooldown(1, 600, commands.BucketType.user)
     async def duel(self, ctx, user: discord.Member):
         if user == ctx.author:
             return
@@ -874,6 +875,7 @@ class Duel(commands.Cog):
 
 
     @commands.command()
+    @commands.cooldown(1, 120, commands.BucketType.user)
     async def npcfight(self, ctx, npc_name):
         attributes = await get_all_attributes(npc_name, scroll_data_json_file, Key=["itemname"])
         if attributes != []:

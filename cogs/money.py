@@ -11,12 +11,6 @@ class economy(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            
-            await ctx.send("You have to wait for 00:00:{:.2f}s to use this command".format(error.retry_after))
-
 
     @commands.command()
     @commands.cooldown(1, 86400,commands.BucketType.user)
