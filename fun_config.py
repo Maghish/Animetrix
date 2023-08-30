@@ -751,9 +751,12 @@ async def open_crystal(user, crystal_name):
         data = json.load(json_file)
         data = (data)
         for scroll in data:
-            if scroll["rarity"] == rarity:
-                all_scrolls.append(scroll["itemname"])
-                continue
+            if scroll["mode"].endswith("Scrolls"):
+                if scroll["rarity"] == rarity:
+                    all_scrolls.append(scroll["itemname"])
+                    continue
+                else:
+                    pass
             else:
                 pass
     
@@ -766,7 +769,7 @@ async def open_crystal(user, crystal_name):
         # and Add them to the user's pocket 
         users = await get_scroll_data()
         await create_scroll(user)
-        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji", "mode", "ability"])
+        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["mode", "emoji", "ability"])
         try:
             index = 0
             t = None

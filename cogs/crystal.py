@@ -73,6 +73,7 @@ class Crystal(commands.Cog):
             if res[1] == 2:
                 await ctx.send("You don't have that item!")
         else:
+            print("tf")
             message = await ctx.reply(f"Opening {res[1]}... **|**")
             symbol = ["/", "-", "\ ", "|", "/", "-", "\ ", "|"]
             for count in range(0, 8):

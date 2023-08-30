@@ -55,39 +55,21 @@ class Human(commands.Cog):
     @commands.group()
     async def stats(self, ctx):
         if ctx.invoked_subcommand is None:
-            # here / stats front end 
             users = await get_human_stats()
-            user = ctx.author
-            health = float(users[str(user.id)]["HP"])
-            maxHealth = int(users[str(user.id)]["MaxHP"])   
-            healthDashes = 10  
+            embed = discord.Embed(
+                title=f"{ctx.author.global_name}'s Stats",
+                description="You can view all your states here. To use attribute points use `a!stats enhance <stat_name>`, `maxhp` for Max HP, `maxchakra` for Max Chakra and `pdmg` for Phyical Damage."
+            )
+            embed.add_field(name="\n",value=f'''
+HP - {await make_bars(ctx.author, "HP", "MaxHP", "🟥", "⬛", 6)}
+Chakra - {await make_bars(ctx.author, "Energy", "MaxEnergy", "🟦", "⬛", 5)}
+Level - {users[str(ctx.author.id)]['Level']}
+EXP - {(await make_bars(ctx.author, "exp", "exp", "⬜", "⬛", 6)).replace(f"{users[str(ctx.author.id)]['exp']}/{users[str(ctx.author.id)]['exp']}", f"{users[str(ctx.author.id)]['exp']}")}
+Attribute Points - {users[str(ctx.author.id)]['AttrPoints']}
+''')
+            # here / finish the embed
+            await ctx.send(embed=embed)
 
-            dashConvert = int(maxHealth/healthDashes)           
-            currentDashes = int(health/dashConvert)            
-            remainingHealth = healthDashes - currentDashes      
-
-            healthDisplay = '🟥' * currentDashes                
-            remainingDisplay = '⬛' * remainingHealth             
-            percent = str(int((health/maxHealth)*100)) + "%"     
-
-        
-            await ctx.send("|" + healthDisplay + remainingDisplay + "|" + " " + percent)
-
-
-            energy = float(users[str(user.id)]["Energy"])
-            maxEnergy = int(users[str(user.id)]["MaxEnergy"])   
-            energyDashes = 5 
-
-            dashConvert = int(maxEnergy/energyDashes)           
-            currentDashes = int(energy/dashConvert)            
-            remainingEnergy = energyDashes - currentDashes      
-
-            energyDisplay = '🟦' * currentDashes                
-            remainingDisplay = '⬛' * remainingEnergy            
-            percent = str(int((energy/maxEnergy)*100)) + "%"  
-
-            await ctx.send("|" + energyDisplay + remainingDisplay + "|" + " " + percent)
-    
     @stats.command()
     async def enhance(self, ctx, stat_name, amount=1):
         users = await get_human_stats()
@@ -1239,7 +1221,6 @@ class Duel(commands.Cog):
                     await duel_stats_change(user, ability[1], "HP")
                     npc_current_energy -= ability[2]
 
-                print(set_of_abilities)
 
             # Change stats
             res = await view2.wait()
