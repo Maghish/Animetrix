@@ -238,7 +238,6 @@ async def heal_human(user, change = 0, mode = ("HP", "MaxHP", "Energy", "MaxEner
     except:
         ...
     
-    print(change)
     users[str(user.id)][mode] += int(change)
         
     with open (human_json_file, "w") as f:
