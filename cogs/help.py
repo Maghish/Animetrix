@@ -7,6 +7,17 @@ class help(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
 
+    @commands.Cog.listener()
+    async def on_command_error(self, message, error):
+        if isinstance(error, commands.MissingPermissions):
+            await message.send("Seems, I lack permissions! Please ask the server moderators or administrators.")
+        elif isinstance(error, commands.CommandNotFound):
+            await message.send("No such command!")
+        elif isinstance(error, commands.CommandOnCooldown):
+            await message.send(f"Command on cooldown! Please try after {round(error.retry_after, 2)} seconds")
+        else:
+            raise error
+
 
     @commands.command()
     async def ping(self, ctx):

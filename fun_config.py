@@ -1,4 +1,5 @@
 import discord
+import random
 from discord.ui import View, Button
 import json
 
@@ -81,6 +82,10 @@ async def open_inv(user):
         users[str(user.id)] = {}
         users[str(user.id)]["Inventory"] = "None"
         users[str(user.id)]["Food"] = "None"
+        users[str(user.id)]["Potion"] = "None"
+        users[str(user.id)]["Crystal"] = "None"
+        users[str(user.id)]["Backpack"] = []
+        users[str(user.id)]["Fragments"] = 0
 
 
     with open (inventory_json_file, "w") as f:
@@ -141,8 +146,22 @@ async def challenge(user, quest_index):
                 if quest_index == index:
                     name = things["itemname"]
                     name_ = name
-                    emoji = things["emoji"]
+                    img = things["img"]
                     level = things["level"]
+                    amount = 8
+                    break
+                else:
+                    index += 1
+                    pass
+            elif mode == "BOSS/Quests":
+                quest_index = int(quest_index)
+                # Find the matching quest_index
+                if quest_index == index:
+                    name = things["itemname"]
+                    name_ = name
+                    img = things["img"]
+                    level = things["level"]
+                    amount = 1
                     break
                 else:
                     index += 1
@@ -157,24 +176,40 @@ async def challenge(user, quest_index):
 
 
     users = await get_human_stats()
-    
+
     if level > users[str(user.id)]["Level"]:
         return [False, 1]
 
-    # Add the quests to the human stats file
-
     try:
-        obj = {"quest_name": f"Defeat {name}", "NPC": name, "emoji": emoji, "level": level, "amount": 8}
-        users[str(user.id)]["Quests"].append(obj)
+        index = 0
+        t = None
+        for things in users[str(user.id)]["Quests"]:
+            if things["quest_name"] == f"Defeat {name}":
+                users[str(user.id)]["Quests"][index]["amount"] = int(amount)
+
+
+                with open(human_json_file, "w") as json_file:
+                    json.dump(users, json_file, indent= 1)
+
+                t = 1
+
+            else:
+                index += 1
+                pass
+        if t == None:
+            obj = {"quest_name": f"Defeat {name}", "NPC": name, "img": img, "level": level, "amount": int(amount)}
+            users[str(user.id)]["Quests"].append(obj)
     except:
-        obj = {"quest_name": f"Defeat {name}", "NPC": name, "emoji": emoji, "level": level, "amount": 8}
-        users[str(user.id)]["Quests"] = [obj]        
+        obj = {"quest_name": f"Defeat {name}", "NPC": name, "img": img, "level": level, "amount": int(amount)}
+        users[str(user.id)]["Quests"] = [obj]  
+
+              
 
     with open(human_json_file,"w") as f:
         json.dump(users,f, indent= 1)
 
 
-    return [True,"Worked"]
+    return [True,name]
 
 
 
@@ -245,18 +280,21 @@ async def buy_this(user,item_name,amount):
             name_lower = name.lower()
             item_name_lower = item_name.lower()
             if name_lower == item_name_lower:
-                if mode.startswith("Shop"): 
+                if mode.startswith("Shop") and not mode.endswith("Scrolls") and not mode.endswith("Crystal"): 
                     if mode.endswith("Food"):
                         format = "Food"
+                        selected = False
+                    elif mode.endswith("Potion"):
+                        format = "Potion"
                         selected = False
                     else:
                         format = "Inventory"   
                         selected = True
+
                     name_ = name
                     price = item["price"]
                     emoji = item["emoji"]
                     value = item["value"]  
-                    MODE = "Inventory"
                     break
                 else:
                     pass
@@ -265,24 +303,7 @@ async def buy_this(user,item_name,amount):
                     
 
     if name_ == None:
-        with open(scroll_data_json_file, "r") as json_file:
-            data = json.load(json_file)
-            iT = (data)
-            for item in iT:
-                name = item["itemname"]
-                mode = item["mode"]
-                name_lower = name.lower()
-                if name_lower == item_name.lower():
-                    name_ = name
-                    price = item["price"]
-                    ability = item["ability"]
-                    emoji = item["emoji"]
-                    MODE = "Scroll"
-                    break
-                else:
-                    pass
-        if name_ == None:
-            return [False,1]
+        return [False,1]
     
     cost = price*amount
     users = await get_bank_data()
@@ -291,68 +312,41 @@ async def buy_this(user,item_name,amount):
     if bal<cost:
         return [False,2]
 
-    if MODE == "Inventory":
-        usersv2 = await get_inventory_data()
-        try:
-            index = 0
-            t = None
-            for thing in usersv2[str(user.id)][format]:
-                n = thing["item"]
-                n_lower = n.lower()
-                if n_lower == item_name_lower:
-                    old_amt = thing["amount"]
-                    new_amt = old_amt + amount
-                    usersv2[str(user.id)][format][index]["amount"] = new_amt
-                    t = 1
-                    break
-                index+=1 
-            if t == None:
-                if selected is not False:
-                    obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "value": value, "selected": False}
-                else:
-                    obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "value": value}
-                usersv2[str(user.id)][format].append(obj)
-        except:
+    usersv2 = await get_inventory_data()
+    try:
+        index = 0
+        t = None
+        for thing in usersv2[str(user.id)][format]:
+            n = thing["item"]
+            n_lower = n.lower()
+            if n_lower == item_name_lower:
+                old_amt = thing["amount"]
+                new_amt = old_amt + amount
+                usersv2[str(user.id)][format][index]["amount"] = new_amt
+                t = 1
+                break
+            index+=1 
+        if t == None:
             if selected is not False:
                 obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "value": value, "selected": False}
             else:
                 obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "value": value}
-            usersv2[str(user.id)][format] = [obj]        
+            usersv2[str(user.id)][format].append(obj)
+    except:
+        if selected is not False:
+            obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "value": value, "selected": False}
+        else:
+            obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "value": value}
+        usersv2[str(user.id)][format] = [obj]        
 
-        with open(inventory_json_file,"w") as f:
-            json.dump(usersv2,f, indent= 1)
+    with open(inventory_json_file,"w") as f:
+        json.dump(usersv2,f, indent= 1)
 
-        await update_bank(user,cost*-1,"Wallet")
+    await update_bank(user,cost*-1,"Wallet")
 
-        return [True,name]
-    else:
-        await create_scroll(user)
-        usersv2 = await get_scroll_data()
-        try:
-            index = 0
-            t = None
-            for thing in usersv2[str(user.id)]["Scrolls"]:
-                n = thing["item"]
-                if n == name_:
-                    old_amt = thing["amount"]
-                    new_amt = old_amt + amount
-                    usersv2[str(user.id)]["Scrolls"][index]["amount"] = new_amt
-                    t = 1
-                    break
-                index+=1 
-            if t == None:
-                obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": 1, "exp": 0}
-                usersv2[str(user.id)]["Scrolls"].append(obj)
-        except:
-            obj = {"item": name , "amount" : amount, "mode": mode, "emoji": emoji, "active": False, "ability": ability, "Level": 1, "exp": 0}
-            usersv2[str(user.id)]["Scrolls"] = [obj]        
-
-        with open(scroll_json_file,"w") as f:
-            json.dump(usersv2,f, indent= 1)
-
-        await update_bank(user,cost*-1,"Wallet")
-
-        return [True, name]
+    return [True,name]
+    
+        
 
 
 
@@ -488,11 +482,11 @@ async def create_brawl_npc(user, npc):
             for ability in thing["ability"]:
                 user_fruit_abilities.append([ability["ability_name"], ability["emoji"], ability["dmg"], ability["chakra"], ability["level"], ability["repeat"]])
 
-    attributes_for_npc = await get_all_attributes(npc, scroll_data_json_file, Key=["mode", "emoji", "level", "img", "ability", "rewards", "stats"])
+    attributes_for_npc = await get_all_attributes(npc, scroll_data_json_file, Key=["mode", "itemname", "level", "img", "ability", "rewards", "stats"])
 
     return [[user_dmg, user_level, user_fruit_name, user_fruit_emoji, user_fruit_abilities, user_fruit_level], [attributes_for_npc[0], attributes_for_npc[1], attributes_for_npc[2], attributes_for_npc[3], attributes_for_npc[4], attributes_for_npc[5], attributes_for_npc[6]]]
-
-
+    
+    
 async def make_bars(user, mode1, mode2, square1:str, square2:str, healthDashes):
     
     users = await get_human_stats()
@@ -556,17 +550,335 @@ async def eat_this(user, item_name, amount):
     
     # 4. If so update the stats of the user
     users = await get_human_stats()
+    value = value * amount 
     if (value*amount + int(users[str(user.id)]["HP"])) > users[str(user.id)]["MaxHP"]:
         if value*amount >= (int(users[str(user.id)]["MaxHP"]) - int(users[str(user.id)]["HP"])):
             value = int(users[str(user.id)]["MaxHP"]) - int(users[str(user.id)]["HP"])
 
+        
+
     await heal_human(user, value, "HP") 
     return [True, item_name, value, amount]
 
-def percentage_change(value, percentage, method="Add"):
+
+async def add_frag(self, user, crystal_name, amount):
+    await open_inv(user)
+    # 1. Check if the user already has fragments of the crystal
+    users = await get_inventory_data()
+    try:
+        index = 0
+        t = None
+        for thing in users[str(user.id)]["Fragments"]:
+            if thing[0].lower() == crystal_name.lower():
+                old_amt = thing[1]
+                new_amt = old_amt + amount
+                users[str(user.id)]["Fragments"][index][1] = new_amt
+
+                with open(inventory_json_file, "w") as json_file:
+                    json.dump(users, json_file, indent=1)
+
+                t = 1
+                break
+            index+=1 
+        if t == None:
+            t = 0
+            with open(items_json_file, "r") as json_file:
+                data = json.load(json_file)
+                data = (data)
+                for things in data:
+                    if things["itemname"].lower() == crystal_name.lower():
+                        crystal_name = things["itemname"]
+                        t = 1
+                        break
+                    else:
+                        pass
+            if t == 0:
+                return [False, 0]
+            else:
+                users[str(user.id)]["Fragments"].append([crystal_name, amount])
+
+    except:
+        # 3. If not, create new list
+        t = 0
+        with open(items_json_file, "r") as json_file:
+            data = json.load(json_file)
+            data = (data)
+            for things in data:
+                if things["itemname"].lower() == crystal_name.lower():
+                    crystal_name = things["itemname"]
+                    t = 1
+                    break
+                else:
+                    pass
+        if t == 0:
+            return [False, 0]
+        else:
+            users[str(user.id)]["Fragments"] =[[crystal_name, amount]]
+    
+    with open(inventory_json_file, "w") as json_file:
+        json.dump(users, json_file, indent=1)
+
+    return [True, 0, crystal_name, amount]
+    
+    
+
+async def sep_int_and_str(stuff):
+    amount = ""
+    item_name = ""
+    for letter in stuff:
+        try:
+            letter = int(letter)
+            amount = amount + str(letter)
+            continue
+        except:
+            item_name = item_name + str(letter)
+            continue
+        
+    if amount == "":
+        amount = 1   
+    return [str(item_name), int(amount)] 
+
+
+
+
+async def percentage_change(value, percentage, method="Add"):
     if method == "Add":
-        return float(value - (value * (percentage/100)))
+        return float(value + (value * (percentage/100)))
     elif method == "Subtract":
         return float(value - (value * (percentage/100)))
+    
 
- 
+async def claim_crystal(user, crystal_name, amount):
+    name_ = None
+    with open(items_json_file, "r") as json_file:
+        data = json.load(json_file)
+        data = (data)
+        for items in data:
+            if items["itemname"].lower() == crystal_name.lower():
+                mode = items["mode"]
+                if mode == "Shop/Crystal":
+                    name_ = items["itemname"]
+                    price = items["price"]
+                    emoji = items["emoji"]
+                    value = items["value"]
+                    rarity = items["rarity"]
+                    break
+                else:
+                    pass
+            else: 
+                pass
+    
+    if name_ == None:
+        return [False, 1]
+    
+    users = await get_inventory_data()
+    cost = price*amount
+    if int(users[str(user.id)]["Fragments"]) < cost:
+        return [False, 2] 
+    
+    try:
+        index = 0
+        t = None
+        for thing in users[str(user.id)]["Crystal"]:
+            n = thing["item"]
+            if n == name_:
+                old_amt = thing["amount"]
+                new_amt = old_amt + amount
+                users[str(user.id)]["Crystal"][index]["amount"] = new_amt
+                t = 1
+                break
+            index += 1
+
+        if t == None:
+            obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "rarity": rarity}
+            users[str(user.id)]["Crystal"].append(obj)
+
+    except:
+        obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "rarity": rarity}
+        users[str(user.id)]["Crystal"] = [obj]
+
+    users[str(user.id)]["Fragments"] -= cost
+
+    with open(inventory_json_file, "w") as json_file:
+        json.dump(users, json_file, indent=1)
+
+    return [True, name_, amount]
+
+
+async def open_crystal(user, crystal_name):
+    # First check if the crystal exists
+    name_ = None
+    with open(items_json_file, "r") as json_file:
+        data = json.load(json_file)
+        data = (data)
+        for items in data:
+            if items["itemname"].lower() == crystal_name.lower():
+                if items["mode"] == "Shop/Crystal":
+                    name_ = items["itemname"]
+                    mode = items["mode"]
+                    rarity = items["rarity"]
+                    value = items["value"]
+                    break
+                else:
+                    pass
+            else:
+                pass
+    
+    if name_ == None:
+        return [False, 1]
+
+    # Then check if the user has it
+    users = await get_inventory_data()
+    t = 0
+    for thing in users[str(user.id)]["Crystal"]:
+        if thing["mode"] == "Shop/Crystal":
+            if thing["item"] == name_:
+                t = 1
+                if thing["amount"] <= 0:
+                    return [False, 2]
+                else:
+                    break
+            else:
+                pass
+        else:
+            pass
+    
+    if t == 0:
+        return [False, 2]
+    
+    # Then fetch all the scrolls that have the crystal's rarity
+    all_scrolls = []
+    with open(scroll_data_json_file, "r") as json_file:
+        data = json.load(json_file)
+        data = (data)
+        for scroll in data:
+            if scroll["mode"].endswith("Scrolls"):
+                if scroll["rarity"] == rarity:
+                    all_scrolls.append(scroll["itemname"])
+                    continue
+                else:
+                    pass
+            else:
+                pass
+            
+    # Then randomly pick the scrolls 
+    selected_scrolls = []
+
+    for _ in range(0, value):
+        selected = random.choice(all_scrolls)
+        selected_scrolls.append(selected)
+        # and Add them to the user's pocket 
+        users = await get_scroll_data()
+        await create_scroll(user)
+        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji","mode", "ability"])
+        try:
+            index = 0
+            t = None
+            for thing in users[str(user.id)]["Scrolls"]:
+                n = thing["item"]
+                if n == selected:
+                    users[str(user.id)]["Scrolls"][index]["amount"] += 1
+                    t = 1
+                    break
+                index+=1 
+            if t == None:
+                obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0}
+                users[str(user.id)]["Scrolls"].append(obj)
+        except:
+            obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0}
+            users[str(user.id)]["Scrolls"] = [obj]        
+
+        with open(scroll_json_file,"w") as f:
+            json.dump(users,f, indent= 1)
+    
+    users = await get_inventory_data()
+    index = 0
+    for thing in users[str(user.id)]["Crystal"]:
+        if thing["item"] == name_:
+            users[str(user.id)]["Crystal"][index]["amount"] -= 1
+
+            with open(inventory_json_file, "w") as json_file:
+                json.dump(users,json_file, indent=1)
+        else:
+            pass
+
+    return [True, name_, selected_scrolls]
+        
+
+        
+async def change_backpack(user, item, amount, action):
+    
+    if action == "Add":
+        format1 = "Potion"
+        format2 = "Backpack"
+    else:
+        format1 = "Backpack"
+        format2 = "Potion"
+    # Check if the item exists
+    name_ = None
+    with open(items_json_file, "r") as json_file:
+        data = json.load(json_file)
+        data = (data)
+        for items in data:
+            if items["itemname"].lower() == item.lower() and items["mode"] == "Shop/Potion":
+                name_ = items["itemname"] 
+                mode = items["mode"]
+                emoji = items["emoji"]
+                value = items["value"] 
+                break
+            else:
+                pass
+
+    if name_ == None:
+        return [False, 1]
+
+            
+    # Check if the user has it
+    users = await get_inventory_data()
+    try:
+        t = None
+        index = 0
+        for things in users[str(user.id)][format1]:
+            if things["item"] == name_:
+                if things["amount"] >= amount:
+                    t = 1
+                    users[str(user.id)][format1][index]["amount"] -= amount
+
+                    with open(inventory_json_file, "w") as json_file:
+                        json.dump(users, json_file, indent=1)
+
+                    break
+                else:
+                    return [False, 2]
+            else:
+                pass
+
+        if t == None:
+            return [False, 2]
+        
+    except:
+        return [False, 2]
+
+    try:
+        t = None
+        index = 0
+        for things in users[str(user.id)][format2]:
+            if things["item"] == name_:
+                t = 1
+                users[str(user.id)][format2][index]["amount"] += amount
+
+                with open(inventory_json_file, "w") as json_file:
+                    json.dump(users, json_file, indent=1)
+            else:
+                pass
+        if t == None:
+            obj = {"item": name_, "amount": amount, "mode": mode, "emoji": emoji, "value": value}
+            users[str(user.id)][format2].append(obj)
+    except:
+        obj = {"item": name_, "amount": amount, "mode": mode, "emoji": emoji, "value": value}
+        users[str(user.id)][format2] = [obj]
+
+    with open(inventory_json_file, "w") as json_file:
+        json.dump(users, json_file, indent=1)
+
+    return [True, name_, amount]
