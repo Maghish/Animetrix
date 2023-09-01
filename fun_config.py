@@ -238,6 +238,7 @@ async def heal_human(user, change = 0, mode = ("HP", "MaxHP", "Energy", "MaxEner
     except:
         ...
     
+    print(change)
     users[str(user.id)][mode] += int(change)
         
     with open (human_json_file, "w") as f:
@@ -280,7 +281,7 @@ async def buy_this(user,item_name,amount):
             name_lower = name.lower()
             item_name_lower = item_name.lower()
             if name_lower == item_name_lower:
-                if mode.startswith("Shop"): 
+                if mode.startswith("Shop") and not mode.endswith("Scrolls") and not mode.endswith("Crystal"): 
                     if mode.endswith("Food"):
                         format = "Food"
                         selected = False
@@ -290,6 +291,7 @@ async def buy_this(user,item_name,amount):
                     else:
                         format = "Inventory"   
                         selected = True
+
                     name_ = name
                     price = item["price"]
                     emoji = item["emoji"]
@@ -642,7 +644,7 @@ async def sep_int_and_str(stuff):
 
 async def percentage_change(value, percentage, method="Add"):
     if method == "Add":
-        return float(value - (value * (percentage/100)))
+        return float(value + (value * (percentage/100)))
     elif method == "Subtract":
         return float(value - (value * (percentage/100)))
     
@@ -769,7 +771,7 @@ async def open_crystal(user, crystal_name):
         # and Add them to the user's pocket 
         users = await get_scroll_data()
         await create_scroll(user)
-        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["mode", "emoji", "ability"])
+        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji","mode", "ability"])
         try:
             index = 0
             t = None

@@ -210,6 +210,18 @@ class Duel(commands.Cog):
                             else:
                                 thing["count"] -= 1
                             continue
+                        elif thing["type"][2].endswith("Transform"):
+                            users = await get_human_stats()
+                            # here / percentage problem
+                            if thing["count"] == 200:
+                                await heal_human(thing["user"], int(20 * (int(users[str(thing["user"].id)]["MaxHP"])/100)), "MaxHP")
+                            res = await duel_stats_change(thing["user"], random.randint(int(thing["amount"]/2), int(thing["amount"])), "Energy")
+                            if res == 0:
+                                await heal_human(thing["user"], -1*(int(20 * (int(users[str(thing["user"].id)]["MaxHP"])/100))), "MaxHP")
+                                thing["count"] = 0
+                            else:
+                                thing["count"] -= 1
+                            continue
                     
                 else:
                     self.effects.remove({

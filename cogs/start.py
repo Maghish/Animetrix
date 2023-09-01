@@ -15,6 +15,15 @@ class Start(commands.Cog):
 
     @commands.command()
     async def start(self, ctx):
+        users = await get_scroll_data()
+        try:
+            if users[str(ctx.author.id)]["Scrolls"] != "None":
+                await ctx.reply("You already started!")
+                return 
+            else:
+                pass
+        except:
+            pass
         embed = discord.Embed(
             title=f"Hello {ctx.author.global_name}!",
             description="Welcome to the world of Animetrix! This is the place where you can fight NPCS and gain rewards to buy crystals to get scrolls to defeat other players! To get started, click the button below to proceed!"
@@ -63,8 +72,22 @@ class Start(commands.Cog):
             the_view = View()
             the_button = Button(label="Join Our Server!", url="https://discord.gg/pFaVxyCJ3K")
             the_view.add_item(the_button)
-            await ctx.send(embed=embed, view=the_view)
+            users = await get_scroll_data()
+            with open(scroll_data_json_file, "r") as json_file:
+                data = json.load(json_file)
+                data = (data)
+                for items in data:
+                    if items["mode"] == "Shop/Scrolls" and items["itemname"] == "Novice Scroll":
+                        users[str(ctx.author.id)]["Scrolls"] = {"item": items["itemname"], "amount": 1, "mode": items["mode"], "emoji": items["emoji"], "active": True, "ability": items["ability"], "Level": 1, "exp": 0}
 
+                        with open(scroll_json_file, "w") as json_file:
+                            json.dump(users, json_file, indent= 1)
+
+                        break
+                    else:
+                        pass        
+            await ctx.send(embed=embed, view=the_view)
+            
 
 
 
