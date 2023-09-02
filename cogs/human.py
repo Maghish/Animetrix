@@ -1040,7 +1040,7 @@ class Duel(commands.Cog):
             if loop[1] != ctx.author:
                 await ctx.reply("You died!")
             else:
-                exp = ALL_STUFF[1][5][0]/2
+                exp = int(ALL_STUFF[1][5][0]/2)
                 await ctx.reply(f"You defeated {loop[2]} and gained {exp}x EXP")
                 await heal_human(ctx.author, exp, "exp")
                 await update_bank(ctx.author, ALL_STUFF[1][5][1], "Chibucks")
@@ -1052,7 +1052,11 @@ class Duel(commands.Cog):
                         if thing["NPC"] == loop[2]:
                             old_amt = thing["amount"]
                             if old_amt - 1 == 0:
-                                await ctx.reply(f"You have completed the '{thing['quest_name']}' Quest!\nPay a visit to `a!quests` again to challenge more quests")
+                                attributes = await get_all_attributes(loop[2], scroll_data_json_file, Key=["rewards"])
+                                await heal_human(ctx.author, int(attributes[0][0] * 8), "exp")
+                                await update_bank(ctx.author, int(attributes[0][1] * 8), "Chibucks")
+
+                                await ctx.reply(f"You have completed the **{thing['quest_name']}** Quest and got {int(attributes[0][1] * 8)} Chibucks <:chibucks:1141752496671445084> and {int(attributes[0][0] * 8)} EXP!\nPay a visit to `a!quests` again to challenge more quests")
                             
                                 users[str(loop[1].id)]["Quests"][index]["amount"] -= 1
 
@@ -1289,7 +1293,7 @@ class Duel(commands.Cog):
             if loop[1] != user:
                 await channel.send(f"{user.mention} died in the battle against {boss}!")
             else:
-                exp = ALL_STUFF[1][5][0]/2
+                exp = int(ALL_STUFF[1][5][0]/2)
                 await channel.send(f"{user.mention} defeated {loop[2]} and gained {exp}x EXP")
                 await heal_human(user, exp, "exp")
                 await update_bank(user, ALL_STUFF[1][5][1], "Chibucks")
@@ -1300,8 +1304,12 @@ class Duel(commands.Cog):
                     for thing in users[str(loop[1].id)]["Quests"]:
                         if thing["NPC"] == loop[2]:
                             old_amt = thing["amount"]
-                            if old_amt - 1 == 0:
-                                await channel.send(f"You have completed the '{thing['quest_name']}' Quest!\nPay a visit to `a!quests` again to challenge more quests")
+                            if (old_amt - 1) == 0:
+                                attributes = await get_all_attributes(boss, scroll_data_json_file, Key=["rewards"])
+                                await heal_human(user, attributes[0][0], "exp")
+                                await update_bank(user, attributes[0][1], "Chibucks")
+
+                                await channel.send(f"You have completed the **{thing['quest_name']}** Quest and got {attributes[0][1]} Chibucks <:chibucks:1141752496671445084> and {attributes[0][0]}x EXP!\nPay a visit to `a!quests` again to challenge more quests")
                             
                                 users[str(loop[1].id)]["Quests"][index]["amount"] -= 1
 
@@ -1444,7 +1452,7 @@ class Quests(commands.Cog):
                     if quest[2] == "BOSS":
                         field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x{amount} Left・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
                     else:
-                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x{amount} Left・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x{amount} Left・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1] * 8} Chibucks, {attributes[2][0]} EXP"
                     continue
                 else:
                     pass
@@ -1463,7 +1471,7 @@ class Quests(commands.Cog):
                     if quest[2] == "BOSS":
                         field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x1・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
                     else:
-                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1] * 8} Chibucks, {attributes[2][0] * 8} EXP"
                     continue
                 else:
                     pass
@@ -1502,7 +1510,7 @@ class Quests(commands.Cog):
             elif res[1] == 1:
                 await ctx.reply("Quest conditions not met!\nPlease choose a lower level task than you and try again!")
         else:
-            await ctx.reply(f"'Defeat {res[1]}' Quest has been activated!")
+            await ctx.reply(f"**Defeat {res[1]}** Quest has been activated!")
 
 
 
