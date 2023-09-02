@@ -6,7 +6,6 @@ import json
 
 
 inventory_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Inventory.json'
-money_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Money.json'
 items_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Items.json'
 human_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Human.json'
 scroll_data_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Scrolls_data.json'
@@ -15,36 +14,18 @@ quests_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Qu
 
 
 
-async def open_account(user):
-        
-    users =  await get_bank_data()
-
-    if str(user.id) in users:
-        return False
-    else:
-        users[str(user.id)] = {}
-        users[str(user.id)]["Wallet"] = 0 
 
 
-    with open (money_json_file, "w") as f:
-        json.dump(users,f, indent= 1)
-    return True 
-
-async def get_bank_data():
-    with open (money_json_file, "r") as f:
-        users = json.load(f)
-    return users
-
-async def update_bank(user, change = 0, mode = ("Wallet", "Bank", "Invest", "Invest_value", "Bitcoin", "Locker", "Locker_level")):
-    users = await get_bank_data()
+async def update_bank(user, change = 0, mode = "Chibucks"):
+    users = await get_inventory_data()
 
     users[str(user.id)][mode] += int(change)
     
-    with open (money_json_file, "w") as f:
+    with open (inventory_json_file, "w") as f:
         json.dump(users,f, indent= 1)
         
 
-    balance = [users[str(user.id)]["Wallet"]]
+    balance = [users[str(user.id)]["Chibucks"]]
     return balance
 
 
@@ -81,6 +62,7 @@ async def open_inv(user):
     else:
         users[str(user.id)] = {}
         users[str(user.id)]["Inventory"] = "None"
+        users[str(user.id)]["Chibucks"] = 0
         users[str(user.id)]["Food"] = "None"
         users[str(user.id)]["Potion"] = "None"
         users[str(user.id)]["Crystal"] = "None"
@@ -306,8 +288,8 @@ async def buy_this(user,item_name,amount):
         return [False,1]
     
     cost = price*amount
-    users = await get_bank_data()
-    bal = users[str(user.id)]["Wallet"]
+    users = await get_inventory_data()
+    bal = users[str(user.id)]["Chibucks"]
 
     if bal<cost:
         return [False,2]
@@ -342,7 +324,7 @@ async def buy_this(user,item_name,amount):
     with open(inventory_json_file,"w") as f:
         json.dump(usersv2,f, indent= 1)
 
-    await update_bank(user,cost*-1,"Wallet")
+    await update_bank(user,cost*-1,"Chibucks")
 
     return [True,name]
     

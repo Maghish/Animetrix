@@ -1,3 +1,4 @@
+import datetime
 from discord.ext import commands, tasks
 from fun_config import *
 
@@ -14,7 +15,12 @@ class help(commands.Cog):
         elif isinstance(error, commands.CommandNotFound):
             await message.send("No such command!")
         elif isinstance(error, commands.CommandOnCooldown):
-            await message.send(f"Command on cooldown! Please try after {round(error.retry_after, 2)} seconds")
+            seconds = round(error.retry_after)
+            time_delta = datetime.timedelta(seconds=seconds)
+            time_str = str(time_delta)
+            if time_str.startswith("0:"):
+                time_str = time_str[2:]
+            await message.send(f"Command on cooldown! Please try after {time_str}")
         else:
             raise error
 

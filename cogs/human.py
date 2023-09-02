@@ -1043,7 +1043,7 @@ class Duel(commands.Cog):
                 exp = ALL_STUFF[1][5][0]/2
                 await ctx.reply(f"You defeated {loop[2]} and gained {exp}x EXP")
                 await heal_human(ctx.author, exp, "exp")
-                await update_bank(ctx.author, ALL_STUFF[1][5][1], "Wallet")
+                await update_bank(ctx.author, ALL_STUFF[1][5][1], "Chibucks")
                 
                 users = await get_human_stats()
                 index = 0
@@ -1292,7 +1292,7 @@ class Duel(commands.Cog):
                 exp = ALL_STUFF[1][5][0]/2
                 await channel.send(f"{user.mention} defeated {loop[2]} and gained {exp}x EXP")
                 await heal_human(user, exp, "exp")
-                await update_bank(user, ALL_STUFF[1][5][1], "Wallet")
+                await update_bank(user, ALL_STUFF[1][5][1], "Chibucks")
                 
                 users = await get_human_stats()
                 index = 0

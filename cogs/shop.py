@@ -64,19 +64,16 @@ class Shop(commands.Cog):
 
         await ctx.send(embed = embed)
 
-    # here / crystals
-
     @commands.command()
     async def buy(self, ctx,*,item):
         
         res = await sep_int_and_str(item)   
         item, amount = res[0].rstrip(), res[1]
         await open_inv(ctx.author)
-        await open_account(ctx.author)
 
         if item.lower() == "universal fragment":
-            users = await get_bank_data()
-            if 300*amount > int(users[str(ctx.author.id)]["Wallet"]):
+            users = await get_inventory_data()
+            if 300*amount > int(users[str(ctx.author.id)]["Chibucks"]):
                 await ctx.send("Insufficient Chibucks")
             else:
                 users = await get_inventory_data()
@@ -85,7 +82,7 @@ class Shop(commands.Cog):
                 with open(inventory_json_file, "w") as json_file:
                     json.dump(users, json_file, indent=1)
                 
-                await update_bank(ctx.author, -1*(300*amount), "Wallet")
+                await update_bank(ctx.author, -1*(300*amount), "Chibucks")
                 await ctx.send(f"You bought {amount}x Universal Fragments\nUse `a!crystals` to view all the fragments you have.")
         else:        
             res = await buy_this(ctx.author,item,amount)

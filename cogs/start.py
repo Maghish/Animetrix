@@ -34,7 +34,6 @@ class Start(commands.Cog):
 
         async def startcall(interaction):
             the_view.children.clear()
-            await open_account(interaction.user)
             await open_inv(interaction.user)
             await create_human(interaction.user)
             await create_scroll(interaction.user)
