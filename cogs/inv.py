@@ -254,6 +254,9 @@ class Backpack(commands.Cog):
                         backpack_items = backpack_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
                         continue
             except:
+                pass
+
+            if backpack_items == "":
                 backpack_items = "*No items in your backpack*"
 
             embed.add_field(name="Backpack", value=backpack_items)
