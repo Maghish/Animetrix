@@ -161,7 +161,7 @@ class Inventory(commands.Cog):
                 return
             await update_bank(ctx.author,-1* int(amount), "Chibucks"),
             await update_bank(member, amount, "Chibucks")
-            await ctx.reply (f'{amount} Chibucks <:chibucks:1141752496671445084> has been transferred from {ctx.author} to {member}!')
+            await ctx.reply (f'{amount} Chibucks <:chibucks:1141752496671445084> has been transferred from {ctx.author.global_name} to {member.global_name}!')
 
 
     @commands.command(aliases = ["bal", "inv"])
@@ -235,7 +235,31 @@ class Backpack(commands.Cog):
 
     @commands.group()
     async def backpack(self, ctx):
-        ...
+        if ctx.invoked_subcommand is None:
+            embed = discord.Embed(
+                title=f"{ctx.author.global_name}'s Backpack",
+                description="Here you can view all items in your backpack. use `a!backpack add <item_name>` to add it to your backpack or if you want to remove it, then use `a!backpack remove <item_name>` to remove it.",
+                timestamp=datetime.datetime.utcnow() 
+            )
+
+            users = await get_inventory_data()
+            user = ctx.author
+
+            backpack_items = ""
+            try:
+                for items in users[str(user.id)]["Backpack"]:
+                    if items["amount"] <= 0:
+                        pass
+                    else:
+                        backpack_items = backpack_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
+                        continue
+            except:
+                backpack_items = "*No items in your backpack*"
+
+            embed.add_field(name="Backpack", value=backpack_items)
+            embed.set_footer(icon_url=(user.display_avatar), text=f"For {ctx.author.global_name}")
+
+            await ctx.send(embed=embed)
 
     @backpack.command()
     async def add(self, ctx,*, item_name):
