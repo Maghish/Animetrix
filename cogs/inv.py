@@ -184,8 +184,10 @@ class Inventory(commands.Cog):
                     inventory_items = inventory_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
                     continue
         except:
-            if inventory_items == "":
-                inventory_items = "*No items in your inventory*"
+            pass
+        
+        if inventory_items == "":
+            inventory_items = "*No items in your inventory*"
     
         embed.add_field(name="Inventory", value=inventory_items, inline=False)  
 
@@ -198,8 +200,10 @@ class Inventory(commands.Cog):
                     food_items = food_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
                     continue
         except:
-            if food_items == "":
-                food_items = "*No items in your food chest*"
+            pass
+
+        if food_items == "":
+            food_items = "*No potions in your inventory*"
         
         embed.add_field(name="Food Chest", value=food_items, inline=False)
 
@@ -212,8 +216,10 @@ class Inventory(commands.Cog):
                     potion_items = potion_items + f"{items['emoji']} | {items['item']} x{items['amount']}"
                     continue
         except:
-            if potion_items == "":
-                potion_items = "*No potions in your inventory*"
+            pass
+
+        if potion_items == "":
+            potion_items = "*No potions in your inventory*"
         
         embed.add_field(name="Potions", value=potion_items, inline=False)
 

@@ -5,12 +5,12 @@ import json
 
 
 
-inventory_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Inventory.json'
-items_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Items.json'
-human_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Human.json'
-scroll_data_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Scrolls_data.json'
-scroll_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Scroll.json'
-quests_json_file = 'E:\\Coding\\ActualCodes\\DiscordBots\\Animetrix\\Storage\\Quests.json'
+inventory_json_file = '../../Storage/inventory.json'
+items_json_file = '../../Storage/Items.json'
+human_json_file = '../../Storage/Human.json'
+scroll_data_json_file = '../../Storage/Scrolls_data.json'
+scroll_json_file = '../../Storage/Scroll.json'
+quests_json_file = '../../Storage/Quests.json'
 
 
 
@@ -206,7 +206,7 @@ async def challenge(user, quest_index):
 
 async def heal_human(user, change = 0, mode = ("HP", "MaxHP", "Energy", "MaxEnergy", "AttrPoints")):
     users = await get_human_stats()
-
+    
     try:
         if (change + int(users[str(user.id)][mode])) > int(users[str(user.id)][f"Max{mode}"]):
             users[str(user.id)][mode] = int(users[str(user.id)][f"Max{mode}"])
