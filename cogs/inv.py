@@ -1,4 +1,5 @@
 from typing import Any
+import datetime
 import discord
 from discord.ext import commands
 from fun_config import *
@@ -123,6 +124,115 @@ class Scroll(commands.Cog):
         await ctx.send(embed = embed)
         
 
+class Inventory(commands.Cog):
+    
+    def __init__(self, client: commands.Bot):
+        self.client = client
+
+    @commands.command()
+    @commands.cooldown(1, 86400,commands.BucketType.user)
+    async def daily(self, ctx):
+        amount = random.randint(100, 9999)
+        await update_bank(ctx.author, amount, "Chibucks")
+        await ctx.send(f"You got {amount} Chibucks <:chibucks:1141752496671445084>!")
+
+    
+    @commands.command()
+    async def pay(self, ctx,member: discord.Member, amount = None):
+        user = ctx.author
+        users = await get_inventory_data()
+        if str(user.id) not in users:
+                return False
+        else:
+            user = ctx.author
+            users = await get_inventory_data()
+            balance = (users[str(user.id)]["Chibucks"])
+            amount = str(amount)
+            result = balance < int(amount)
+            print(f'{balance} and {amount} and {result}')
+            if amount == None:
+                await ctx.send("Enter the amount")
+                return 
+            if result is True:
+                await ctx.send("Insufficient Chibucks")
+                return
+            if int(amount)<0:
+                await ctx.send("Invaild amount")
+                return
+            await update_bank(ctx.author,-1* int(amount), "Chibucks"),
+            await update_bank(member, amount, "Chibucks")
+            await ctx.reply (f'{amount} Chibucks <:chibucks:1141752496671445084> has been transferred from {ctx.author.global_name} to {member.global_name}!')
+
+
+    @commands.command(aliases = ["bal", "inv"])
+    async def inventory(self, ctx):
+        embed = discord.Embed(
+            title=f"{ctx.author.global_name}'s Inventory",
+            description="Here you can find a lot of items like food, chibucks, potions and such items. if you want to inspect any of these items (excluding chibucks)",
+            timestamp=datetime.datetime.utcnow()
+        )
+        users = await get_inventory_data()
+        user = ctx.author
+        embed.add_field(name=f"{(users[str(user.id)]['Chibucks']):,} Chibucks <:chibucks:1141752496671445084>", value="\n\n", inline=False)
+
+        inventory_items = ""
+        try:
+            for items in users[str(user.id)]["Inventory"]:
+                if items["amount"] <= 0:
+                    pass
+                else:
+                    inventory_items = inventory_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
+                    continue
+        except:
+            pass
+        
+        if inventory_items == "":
+            inventory_items = "*No items in your inventory*"
+    
+        embed.add_field(name="Inventory", value=inventory_items, inline=False)  
+
+        food_items = ""
+        try:
+            for items in users[str(user.id)]["Food"]:
+                if items["amount"] <= 0:
+                    pass
+                else:
+                    food_items = food_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
+                    continue
+        except:
+            pass
+
+        if food_items == "":
+            food_items = "*No potions in your inventory*"
+        
+        embed.add_field(name="Food Chest", value=food_items, inline=False)
+
+        potion_items = ""
+        try:
+            for items in users[str(user.id)]["Potion"]:
+                if items["amount"] <= 0:
+                    pass
+                else:
+                    potion_items = potion_items + f"{items['emoji']} | {items['item']} x{items['amount']}"
+                    continue
+        except:
+            pass
+
+        if potion_items == "":
+            potion_items = "*No potions in your inventory*"
+        
+        embed.add_field(name="Potions", value=potion_items, inline=False)
+
+        embed.add_field(name="\n", value="\n", inline=False)
+        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
+
+        await ctx.send(embed=embed)
+
+
+
+
+
+
 class Backpack(commands.Cog):
 
     def __init__(self, client: commands.Bot):
@@ -131,7 +241,34 @@ class Backpack(commands.Cog):
 
     @commands.group()
     async def backpack(self, ctx):
-        ...
+        if ctx.invoked_subcommand is None:
+            embed = discord.Embed(
+                title=f"{ctx.author.global_name}'s Backpack",
+                description="Here you can view all items in your backpack. use `a!backpack add <item_name>` to add it to your backpack or if you want to remove it, then use `a!backpack remove <item_name>` to remove it.",
+                timestamp=datetime.datetime.utcnow() 
+            )
+
+            users = await get_inventory_data()
+            user = ctx.author
+
+            backpack_items = ""
+            try:
+                for items in users[str(user.id)]["Backpack"]:
+                    if items["amount"] <= 0:
+                        pass
+                    else:
+                        backpack_items = backpack_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
+                        continue
+            except:
+                pass
+
+            if backpack_items == "":
+                backpack_items = "*No items in your backpack*"
+
+            embed.add_field(name="Backpack", value=backpack_items)
+            embed.set_footer(icon_url=(user.display_avatar), text=f"For {ctx.author.global_name}")
+
+            await ctx.send(embed=embed)
 
     @backpack.command()
     async def add(self, ctx,*, item_name):
@@ -167,6 +304,7 @@ class Backpack(commands.Cog):
 
 async def setup(client:commands.Bot) -> None:
    await client.add_cog(Scroll(client))
+   await client.add_cog(Inventory(client))
    await client.add_cog(Backpack(client))
 
 
