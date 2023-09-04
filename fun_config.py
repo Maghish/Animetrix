@@ -2,14 +2,15 @@ import discord
 import random
 from discord.ui import View, Button
 import json
+import os
 
 
-
-inventory_json_file = '../../Storage/inventory.json'
-items_json_file = '../../Storage/Items.json'
-human_json_file = '../../Storage/Human.json'
-scroll_data_json_file = '../../Storage/Scrolls_data.json'
-scroll_json_file = '../../Storage/Scroll.json'
+script_dir = os.path.dirname(os.path.abspath(__file__))
+inventory_json_file = os.path.abspath(os.path.join(script_dir, '../../Storage/Inventory.json'))
+items_json_file = os.path.abspath(os.path.join(script_dir, '../../Storage/Items.json'))
+human_json_file = os.path.abspath(os.path.join(script_dir, '../../Storage/Human.json'))
+scroll_data_json_file = os.path.abspath(os.path.join(script_dir, '../../Storage/Scrolls_data.json'))
+scroll_json_file = os.path.abspath(os.path.join(script_dir, '../../Storage/Scroll.json'))
 
 
 

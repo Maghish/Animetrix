@@ -70,7 +70,6 @@ class help(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         await ctx.reply(f"Pong 🏓 ! {round(self.client.latency)}ms")
-        await self.bleed.start()
 
 
     @commands.command()
