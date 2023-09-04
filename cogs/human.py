@@ -999,7 +999,7 @@ class Duel(commands.Cog):
             for abilities in ALL_STUFF[1][4]:
                 set_of_abilities.append([abilities["ability_name"], abilities["dmg"]])
             ability = random.choice(set_of_abilities)
-            ability[1] = random.randint(int(ability[1])/2, int(ability[1]))
+            ability[1] = random.randint(int(ability[1]/2), int(ability[1]))
             await duel_stats_change(ctx.author, ability[1], "HP")
 
             # Change stats

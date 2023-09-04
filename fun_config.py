@@ -10,8 +10,6 @@ items_json_file = '../../Storage/Items.json'
 human_json_file = '../../Storage/Human.json'
 scroll_data_json_file = '../../Storage/Scrolls_data.json'
 scroll_json_file = '../../Storage/Scroll.json'
-quests_json_file = '../../Storage/Quests.json'
-
 
 
 

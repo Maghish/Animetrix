@@ -77,7 +77,7 @@ class Start(commands.Cog):
                 data = (data)
                 for items in data:
                     if items["mode"] == "Shop/Scrolls" and items["itemname"] == "Novice Scroll":
-                        users[str(ctx.author.id)]["Scrolls"] = {"item": items["itemname"], "amount": 1, "mode": items["mode"], "emoji": items["emoji"], "active": True, "ability": items["ability"], "Level": 1, "exp": 0}
+                        users[str(ctx.author.id)]["Scrolls"] = [{"item": items["itemname"], "amount": 1, "mode": items["mode"], "emoji": items["emoji"], "active": True, "ability": items["ability"], "Level": 1, "exp": 0}]
 
                         with open(scroll_json_file, "w") as json_file:
                             json.dump(users, json_file, indent= 1)
