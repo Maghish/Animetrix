@@ -24,7 +24,7 @@ class Scroll(commands.Cog):
                 Inventory = []
 
             embed = discord.Embed(
-                title=f"{ctx.author}'s Fruits",
+                title=f"{ctx.author.global_name}'s Fruits",
                 description="This is the collection of fruits that you have obtained. Each fruit will disappear they got used."
             )   
             list_of_all_fruits = ""

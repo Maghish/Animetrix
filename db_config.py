@@ -2,8 +2,12 @@ import json
 import firebase_admin
 from firebase_admin import db, credentials
 from fun_config import *
+import os
 
-cred = credentials.Certificate("credentials.json")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+credentials_path = os.path.join(script_dir, 'credentials.json')
+
+cred = credentials.Certificate(credentials_path)
 firebase_admin.initialize_app(cred, {"databaseURL": "https://animetrix-7e080-default-rtdb.asia-southeast1.firebasedatabase.app/"})
 
 
