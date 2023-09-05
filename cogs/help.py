@@ -106,7 +106,7 @@ class help(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        await ctx.reply(f"Pong 🏓 ! {round(self.client.latency)}ms")
+        await ctx.reply(f"Pong 🏓  ! {round(self.client.latency, 3)}ms")
 
 
     @commands.command()
