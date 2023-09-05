@@ -571,6 +571,7 @@ class Duel(commands.Cog):
     @commands.cooldown(1, 600, commands.BucketType.user)
     async def duel(self, ctx, user: discord.Member):
         if user == ctx.author:
+            self.duel.reset_cooldown(ctx)
             return
         loop = True
         view = self.DefaultView(ctx)
@@ -915,6 +916,7 @@ class Duel(commands.Cog):
            attributes = attributes 
         else:
             await ctx.reply(f"Couldn't find npc called '{npc_name}'")
+            self.npcfight.reset_cooldown(ctx)
             return
         loop = True
         npc_current_health = None
