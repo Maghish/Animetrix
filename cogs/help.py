@@ -51,6 +51,18 @@ class help(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def update_firebase(self):
+        try:
+            users = await get_human_stats()
+            if users == {}: raise ValueError
+            users = await get_inventory_data()
+            if users == {}: raise ValueError
+            users = await get_scroll_data()
+            if users == {}: raise ValueError
+            
+            await get_scroll_data()
+        except:
+            return 
+        
         cursor = DB()
         await cursor.create()
         info_text = termcolor.colored("PUSH", "blue", attrs=["bold", "blink"]) + "     "
