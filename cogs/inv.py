@@ -25,7 +25,9 @@ class Scroll(commands.Cog):
 
             embed = discord.Embed(
                 title=f"{ctx.author.global_name}'s Fruits",
-                description="This is the collection of fruits that you have obtained. Each fruit will disappear they got used."
+                description="This is the collection of fruits that you have obtained. Each fruit will disappear they got used.",
+                color= 0xaa5bfc,
+                timestamp=datetime.datetime.utcnow()
             )   
             list_of_all_fruits = ""
             try:
@@ -47,7 +49,13 @@ class Scroll(commands.Cog):
 
                 embed.add_field(name="\n",value=list_of_all_fruits)
             except:
+                pass
+
+            if list_of_all_fruits == "":
                 embed.add_field(name="\n",value="*You haven't obtained any fruits yet*")
+
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
 
             await ctx.send(embed=embed)
 
@@ -117,10 +125,14 @@ class Scroll(commands.Cog):
 
         embed = discord.Embed(
             title= f"{ctx.author.display_name} - Lv{level} {name}",
-            description= attributes[0]
+            description= attributes[0],
+            color = 0xaa5bfc,
+            timestamp= datetime.datetime.utcnow()
         )
         embed.add_field(name="\n", value=f"🥭・Duplicates - {amount - 1}\n🔼・Level - {level}\n✨・Rarity - {attributes[2]}")
         embed.set_thumbnail(url=attributes[1])
+        embed.add_field(name="\n", value="\n", inline=False)
+        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
         await ctx.send(embed = embed)
         
 
@@ -169,6 +181,7 @@ class Inventory(commands.Cog):
         embed = discord.Embed(
             title=f"{ctx.author.global_name}'s Inventory",
             description="Here you can find a lot of items like food, chibucks, potions and such items. if you want to inspect any of these items (excluding chibucks)",
+            color= 0xaa5bfc,
             timestamp=datetime.datetime.utcnow()
         )
         users = await get_inventory_data()
@@ -224,6 +237,7 @@ class Inventory(commands.Cog):
         embed.add_field(name="Potions", value=potion_items, inline=False)
 
         embed.add_field(name="\n", value="\n", inline=False)
+
         embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
 
         await ctx.send(embed=embed)
@@ -245,6 +259,7 @@ class Backpack(commands.Cog):
             embed = discord.Embed(
                 title=f"{ctx.author.global_name}'s Backpack",
                 description="Here you can view all items in your backpack. use `a!backpack add <item_name>` to add it to your backpack or if you want to remove it, then use `a!backpack remove <item_name>` to remove it.",
+                color= 0xaa5bfc,
                 timestamp=datetime.datetime.utcnow() 
             )
 
@@ -266,6 +281,8 @@ class Backpack(commands.Cog):
                 backpack_items = "*No items in your backpack*"
 
             embed.add_field(name="Backpack", value=backpack_items)
+
+            embed.add_field(name="\n", value="\n", inline=False)
             embed.set_footer(icon_url=(user.display_avatar), text=f"For {ctx.author.global_name}")
 
             await ctx.send(embed=embed)

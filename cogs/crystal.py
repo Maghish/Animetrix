@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from emoji import emojize
+import datetime
 import asyncio
 from fun_config import *
 
@@ -42,8 +43,11 @@ class Crystal(commands.Cog):
 
             embed = discord.Embed(
                 title=f"{ctx.author}'s Crystals", 
-                description="This is the list of all the crystals you have ready to open. Use `a!crystals open <crystal_name>` to open the crystal! To inspect the crystal, type `a!crystals info <crystal_name>`"
+                description="This is the list of all the crystals you have ready to open. Use `a!crystals open <crystal_name>` to open the crystal! To inspect the crystal, type `a!crystals info <crystal_name>`",
+                color = 0xaa5bfc,
+                timestamp = datetime.datetime.utcnow()
             )
+            
             list_of_all_crystals = ""
             try:
                 for crystal in Crystals:
@@ -56,8 +60,14 @@ class Crystal(commands.Cog):
                         list_of_all_crystals = list_of_all_crystals + f"{emojize(emoji)} ・ {name} x{amount}\n"
                 embed.add_field(name="\n", value=list_of_all_crystals)
             except:
+                pass
+
+            if list_of_all_crystals == "":
                 embed.add_field(name="\n", value="*You haven't obtained any crystals yet!*")
     
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
+
             await ctx.send(embed=embed)
 
         

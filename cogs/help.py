@@ -1,7 +1,7 @@
 import datetime
 import termcolor
 from discord.ext import commands, tasks
-from datetime import datetime
+from datetime import datetime, timedelta
 from fun_config import *
 from db_config import *
 
@@ -23,6 +23,10 @@ class help(commands.Cog):
         print(f"{termcolor.colored((str(datetime.now()))[:-7], 'red', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " human (firebase)")
         await cursor.update(mode="scroll")
         print(f"{termcolor.colored((str(datetime.now()))[:-7], 'red', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " scroll (firebase)")
+        await cursor.update(mode="scrolls_data")
+        print(f"{termcolor.colored((str(datetime.now()))[:-7], 'red', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " scrolls_data (firebase)")
+        await cursor.update(mode="items_data")
+        print(f"{termcolor.colored((str(datetime.now()))[:-7], 'red', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " items_data (firebase)")
        
 
 
@@ -34,7 +38,7 @@ class help(commands.Cog):
             await message.send("No such command!")
         elif isinstance(error, commands.CommandOnCooldown):
             seconds = round(error.retry_after)
-            time_delta = datetime.timedelta(seconds=seconds)
+            time_delta = timedelta(seconds=seconds)
             time_str = str(time_delta)
             if time_str.startswith("0:"):
                 time_str = time_str[2:]
@@ -56,16 +60,37 @@ class help(commands.Cog):
         print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " human (firebase)")
         await cursor.update(mode="scroll")
         print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " scroll (firebase)")
+        await cursor.update(mode="scrolls_data")
+        print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " scrolls_data (firebase)")
+        await cursor.update(mode="items_data")
+        print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Push & Updated', 'magenta')}" + " items_data (firebase)")
 
 
     @commands.command()
     @commands.is_owner()
-    async def update_temp(self, ctx, mode):
+    async def update_temp(self, ctx, mode="all"):
+        if mode == "all":
+            index = 0
+            while True:
+                if index == 0: mode = "inventory"
+                elif index == 1: mode = "human"
+                elif index == 2: mode = "scroll"
+                elif index == 3: mode = "scrolls_data"
+                elif index == 4: mode = "items_data"
+                elif index == 5: break
+                cursor = DB()
+                await cursor.update_json(mode=mode)
+                info_text = termcolor.colored("FETCH", "blue", attrs=["bold", "blink"]) + "     "
+                print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + f" {mode} (firebase)")
+                index += 1
+
         cursor = DB()
         await cursor.update_json(mode=mode)
         info_text = termcolor.colored("FETCH", "blue", attrs=["bold", "blink"]) + "     "
         print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + f" {mode} (firebase)")
+        
         await ctx.send("Successfully updated!")  
+             
 
     @commands.command()
     async def ping(self, ctx):
@@ -73,6 +98,7 @@ class help(commands.Cog):
 
 
     @commands.command()
+    @commands.is_owner()
     async def shutdown(self, ctx):
         if ctx.author.id == 978672079291449424:
             await ctx.reply("Shutting Down......")
