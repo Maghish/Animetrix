@@ -10,6 +10,7 @@ class help(commands.Cog):
 
     def __init__(self, client: commands.Bot):
         self.client = client
+        self.client.remove_command('help')
         self.update_firebase.start()
 
     async def cog_unload(self):
@@ -103,6 +104,39 @@ class help(commands.Cog):
         
         await ctx.send("Successfully updated!")  
              
+
+    @commands.command()
+    async def help(self, ctx, command=None):
+        if command is None:
+            embed = discord.Embed(
+                title="Animetrix's List of commands!",
+                description="You can find all commands here, use `a!help <command_name>` to inspect the command itself!",
+                color=0xaa5bfc,
+                timestamp= datetime.utcnow()
+            )
+            embed.add_field(name="Basics ⚡", value="`help`, `ping`, `start`, `animehub`", inline=False)
+            embed.add_field(name="Config ⚙️", value="`config spawn`, `config default`", inline=False)
+            embed.add_field(name="Fruits/Scrolls 🍊", value="`scrolls`, `scrolls select`, `scrolls info`", inline=False)
+            embed.add_field(name="Inventory 👜", value="`inv`, `inspect`", inline=False)
+            embed.add_field(name="Chibucks <:chibucks:1141752496671445084>", value="`bal`, `pay`, `daily`", inline=False)
+            embed.add_field(name="Backpack 🎒", value="`backpack`, `backpack add`, `backpack remove`", inline=False)
+            embed.add_field(name="Stats/Profile 😎", value="`profile`, `stats`, `stats enhance`, `eat`", inline=False)
+            embed.add_field(name="NPCS 🍣", value="`npcfight`, `npcinfo`", inline=False)
+            embed.add_field(name="Dueling ⚔️", value="`duel`", inline=False)
+            embed.add_field(name="Crystals 🔮", value="`claim`, `crystals`, `crystals open`", inline=False)
+            embed.add_field(name="Quests 🍰", value="`quests`, `quests challenge`, `quests info`", inline=False)
+            embed.add_field(name="Shop 🛒", value="`shop`, `shop <page>`, `buy`", inline=False)
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
+            await ctx.send(embed=embed) 
+        else:
+            ...
+
+
+
+
+
+
 
     @commands.command()
     async def ping(self, ctx):
