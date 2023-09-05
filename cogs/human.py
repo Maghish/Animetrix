@@ -23,34 +23,36 @@ class Human(commands.Cog):
             return
         
         if message.content.startswith(''):
-            t = 0
-            await create_human(message.author)
-            user = message.author
-            users = await get_human_stats()
-            await heal_human(user, 1, "exp")
-            current = users[str(user.id)]["exp"]
-            lvl = users[str(user.id)]["Level"]
-            if current >= math.ceil(6* (lvl ** 4) / 2.5):
-                temp_level = lvl
-                while True:
-                    if current >= math.ceil(6* (temp_level ** 4) / 2.5):
-                        temp_level += 1
-                    else: 
-                        break
-                temp_level = temp_level - lvl
-                await heal_human(message.author, temp_level, "Level")
-                LVL = lvl + temp_level
-                embed = discord.Embed(
-                        title=f"Awesome {message.author}!",
-                        description=f"You leveled up from {lvl} to {LVL}!",
-                        timestamp= datetime.utcnow()
-                    )
-                embed.set_footer(icon_url=(message.author.display_avatar), text= f"For {message.author}")
-                await message.channel.send(embed = embed)
-                await message.channel.send(f"You got {2*(int(temp_level))} attribute points!\ncheckout `a!stats`")
-                await heal_human(message.author, 2*(int(temp_level)), "AttrPoints")
-            else:
-                return
+            try:
+                t = 0
+                user = message.author
+                users = await get_human_stats()
+                await heal_human(user, 1, "exp")
+                current = users[str(user.id)]["exp"]
+                lvl = users[str(user.id)]["Level"]
+                if current >= math.ceil(6* (lvl ** 4) / 2.5):
+                    temp_level = lvl
+                    while True:
+                        if current >= math.ceil(6* (temp_level ** 4) / 2.5):
+                            temp_level += 1
+                        else: 
+                            break
+                    temp_level = temp_level - lvl
+                    await heal_human(message.author, temp_level, "Level")
+                    LVL = lvl + temp_level
+                    embed = discord.Embed(
+                            title=f"Awesome {message.author}!",
+                            description=f"You leveled up from {lvl} to {LVL}!",
+                            timestamp= datetime.utcnow()
+                        )
+                    embed.set_footer(icon_url=(message.author.display_avatar), text= f"For {message.author}")
+                    await message.channel.send(embed = embed)
+                    await message.channel.send(f"You got {2*(int(temp_level))} attribute points!\ncheckout `a!stats`")
+                    await heal_human(message.author, 2*(int(temp_level)), "AttrPoints")
+                else:
+                    return
+            except:
+                pass
 
     @commands.group()
     async def stats(self, ctx):
