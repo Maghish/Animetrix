@@ -58,7 +58,9 @@ class Human(commands.Cog):
             users = await get_human_stats()
             embed = discord.Embed(
                 title=f"{ctx.author.global_name}'s Stats",
-                description="You can view all your states here. To use attribute points use `a!stats enhance <stat_name>`, `maxhp` for Max HP, `maxchakra` for Max Chakra and `pdmg` for Phyical Damage."
+                description="You can view all your states here. To use attribute points use `a!stats enhance <stat_name>`, `maxhp` for Max HP, `maxchakra` for Max Chakra and `pdmg` for Phyical Damage.",
+                color=0xaa5bfc,
+                timestamp= datetime.utcnow()
             )
             embed.add_field(name="\n",value=f'''
 HP - {await make_bars(ctx.author, "HP", "MaxHP", "🟥", "⬛", 6)}
@@ -68,6 +70,8 @@ EXP - {(await make_bars(ctx.author, "exp", "exp", "⬜", "⬛", 6)).replace(f"{u
 Attribute Points - {users[str(ctx.author.id)]['AttrPoints']}
 ''')
             # here / finish the embed
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
             await ctx.send(embed=embed)
 
     @stats.command()
@@ -581,7 +585,9 @@ class Duel(commands.Cog):
             while loop is True:
                 embed = discord.Embed(
                     title=f"{ctx.author.global_name} vs {user.global_name} [Round {round}]",
-                    description= "Each player must use their ability simultaneously. Only players will be visible to use the abilities and each abilities cost Chakra, if you run out of chakra you will be unable to use any abilities until it recharges!"
+                    description= "Each player must use their ability simultaneously. Only players will be visible to use the abilities and each abilities cost Chakra, if you run out of chakra you will be unable to use any abilities until it recharges!",
+                    color = 0xaa5bfc,
+                    timestamp= datetime.utcnow()                
                 )
 
                 view2 = View()
@@ -661,7 +667,8 @@ class Duel(commands.Cog):
 
 
                 embed.add_field(name=f"{user.display_name} **[{ALL_STUFF[1][2]}]**", value=FIELD_VALUE)
-                
+                embed.add_field(name="\n", value="\n", inline=False)
+                embed.set_footer(icon_url=("https://media.discordapp.net/attachments/1126174753359679498/1148507348835520562/e4ab08280ed1f76ddba1705b5852d8e1.png?width=602&height=602"), text= f"{ctx.author.global_name} vs {user.global_name}")
                 await ctx.send(embed=embed)
 
                 await asyncio.sleep(5)
@@ -916,7 +923,9 @@ class Duel(commands.Cog):
         while loop is True:
             embed = discord.Embed(
                 title=f"{ctx.author.display_name} vs {attributes[0]} [Round {round}]",
-                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost. Sadly Players can not inflict effects to NPCS and so do they."
+                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost. Sadly Players can not inflict effects to NPCS and so do they.",
+                color=0xaa5bfc,
+                timestamp= datetime.utcnow()
             )
 
             view2 = View()
@@ -961,6 +970,8 @@ class Duel(commands.Cog):
             
             embed.add_field(name=f"{attributes[0]}", value=FIELD_VALUE)
             # Send the embed
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"C'mon {ctx.author.global_name}!")
             await ctx.send(embed=embed)
             # Wait 5 seconds and send ability wheel in the DM
             await asyncio.sleep(5)
@@ -1141,7 +1152,9 @@ class Duel(commands.Cog):
         while loop is True:
             embed = discord.Embed(
                 title=f"{user.global_name} vs {boss} [Round {round}]",
-                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost. Sadly Players can not inflict effects to NPCS and so do they."
+                description= "This is a npc battle! The Player can make moves as usual and can't use it if they ran out of chakra. But NPCS can use any moves at anytime without chakra cost. Sadly Players can not inflict effects to NPCS and so do they.",
+                color=0xaa5bfc,
+                timestamp=datetime.utcnow()
             )
 
             view2 = View()
@@ -1188,6 +1201,8 @@ class Duel(commands.Cog):
             
             embed.add_field(name=f"{boss}", value=FIELD_VALUE)
             # Send the embed
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(user.display_avatar), text= f"C'mon {user.global_name}!")
             await channel.send(embed=embed)
             # Wait 5 seconds and send ability wheel in the DM
             await asyncio.sleep(5)
@@ -1440,7 +1455,9 @@ class Quests(commands.Cog):
             
             embed = discord.Embed(
                 title="NPC Quests",
-                description="Quests are basically like tasks which will keep track on your NPC duels and if defeat the respective NPC mentioned in the quest, then you will be heavily rewarded including Chibucks, Universal Shards...! You can simply use `a!quests challenge <Quest_Index>`. Remember, you can challenge quests which have lower level than you or equal level!"
+                description="Quests are basically like tasks which will keep track on your NPC duels and if defeat the respective NPC mentioned in the quest, then you will be heavily rewarded including Chibucks, Universal Shards...! You can simply use `a!quests challenge <Quest_Index>`. Remember, you can challenge quests which have lower level than you or equal level!",
+                color=0xaa5bfc,
+                timestamp= datetime.utcnow()
             )
 
             field_value = ""

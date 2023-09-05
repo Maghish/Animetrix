@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands 
+import datetime
 import emoji
 from fun_config import *
 
@@ -16,12 +17,15 @@ class Shop(commands.Cog):
             embed = discord.Embed(
                 title= "Marketplace",
                 description= "Here you can find various items, crystals and buy potions and various materials. Type `a!shop <page>` to open the page!",
-                color= 0x1ea205
+                color= 0xaa5bfc,
+                timestamp= datetime.datetime.utcnow()
 
             )
             embed.add_field(name= "Potions 🪴 (1)", value= "Potions will give you external buffs while during duel or npc battles.", inline= False)
             embed.add_field(name= "Foods 🍉 (2)", value= "These items heals your HP/Chakra outisde the battle.", inline = False)
             embed.add_field(name= "Crystals 📜 (3)", value= "You can buy crystals plus you can collect fragments and claim the crystal.", inline= False)
+            embed.add_field(name="\n", value="\n", inline=False)
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
             await ctx.send(embed = embed)
     
 
@@ -30,11 +34,13 @@ class Shop(commands.Cog):
         embed = discord.Embed(
         title= "Marketplace (1)",
         description= "Here you can find various types of Potions to boost or buff yourself in duels or npc battles, remember you can only use this while in a battle. type `a!buy <item_name>` to buy the item!",
-        color= 0x1ea205
+        color= 0xaa5bfc,
+        timestamp= datetime.datetime.utcnow()
         )
 
         embed.add_field(name= "Regeneration Potion - 2000 Chibucks <:chibucks:1141752496671445084>", value="Regenerate the HP for 20 mins", inline= False)
-
+        embed.add_field(name="\n", value="\n", inline=False)
+        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
         await ctx.send(embed = embed)
 
     @shopp.command(aliases = ["3"])
@@ -42,7 +48,8 @@ class Shop(commands.Cog):
         embed = discord.Embed(
         title= "Marketplace (3)",
         description= "Here you can find all crystals available. You can buy the fragments using `a!buy Universal Fragment`. To claim the crystals, use `a!claim <crystal_name>`.",
-        color= 0x1ea205
+        color= 0xaa5bfc,
+        timestamp= datetime.datetime.utcnow()
         )
 
         
@@ -61,7 +68,8 @@ class Shop(commands.Cog):
                     pass
 
         embed.add_field(name="Crystals", value=crystals)
-
+        embed.add_field(name="\n", value="\n", inline=False)
+        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
         await ctx.send(embed = embed)
 
     @commands.command()

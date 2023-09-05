@@ -1,5 +1,6 @@
 from typing import Optional, Union
 import discord
+import datetime
 from discord.emoji import Emoji
 from discord.enums import ButtonStyle
 from discord.ext import commands
@@ -26,8 +27,13 @@ class Start(commands.Cog):
             pass
         embed = discord.Embed(
             title=f"Hello {ctx.author.global_name}!",
-            description="Welcome to the world of Animetrix! This is the place where you can fight NPCS and gain rewards to buy crystals to get scrolls to defeat other players! To get started, click the button below to proceed!"
+            description="Welcome to the world of Animetrix! This is the place where you can fight NPCS and gain rewards to buy crystals to get scrolls to defeat other players! To get started, click the button below to proceed!",
+            color= 0xaa5bfc,
+            timestamp= datetime.datetime.utcnow()
         )
+        embed.add_field(name="\n", value="\n", inline=False)
+        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
+
         the_view = View()
         the_button = Button(label="Click here!", style=discord.ButtonStyle.green)
         the_view.add_item(the_button)
@@ -39,7 +45,9 @@ class Start(commands.Cog):
             await create_scroll(interaction.user)
             embed = discord.Embed(
                 title="Quick Guide",
-                description="Before you start, here's a quick guide for you!"
+                description="Before you start, here's a quick guide for you!",
+                color=0xaa5bfc,
+                timestamp= datetime.datetime.utcnow()
             )
             embed.add_field(name="Help", value="Use `a!help` to get the help menu whenever you need.", inline=False)
             embed.add_field(name="Fruits", value="Fruits are things which you can consume to get abilities! Fruits will disappear after use. To view all of your fruits, Type `a!fruits`. To select/consume a fruit, use `a!fruits select <fruit_name>`", inline=False)
@@ -57,7 +65,9 @@ class Start(commands.Cog):
         if not res:
             embed = discord.Embed(
                 title="Enjoy your journey!", 
-                description="You have now been gifted **`Novice Scroll`**. This is your first fruit! You may still be unclear about what to do next, so here's another quick step by step process to get started!"
+                description="You have now been gifted **`Novice Scroll`**. This is your first fruit! You may still be unclear about what to do next, so here's another quick step by step process to get started!",
+                color= 0xaa5bfc,
+                timestamp= datetime.datetime.utcnow()
             )
             embed.add_field(name="Step 1:", value="Start by typing `a!fruits` to view your fruit.")
             embed.add_field(name="Step 2:", value="Type `a!fruits select <fruit_name>` to select your fruit")
@@ -67,6 +77,8 @@ class Start(commands.Cog):
             embed.add_field(name="Step 6:", value="Start by typing `a!fruits` to view your fruit.")
             embed.add_field(name="Step 7:", value="Start by typing `a!fruits` to view your fruit.")
             embed.add_field(name="Step 8:", value="Start by typing `a!fruits` to view your fruit.")
+            embed.add_field(name="\n",value="*You haven't obtained any fruits yet*")
+            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
             # here / steps guide
             the_view = View()
             the_button = Button(label="Join Our Server!", url="https://discord.gg/pFaVxyCJ3K")
