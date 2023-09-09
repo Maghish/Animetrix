@@ -52,6 +52,22 @@ class help(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def update_firebase(self):
+        if self.update_firebase.count == None:
+            cursor = DB()
+            await cursor.create()
+            info_text = termcolor.colored("FETCH", "blue", attrs=["bold", "blink"]) + "     "
+            await cursor.update_json(mode="inventory")
+            print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + " inventory (firebase)")
+            await cursor.update_json(mode="human") 
+            print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + " human (firebase)")
+            await cursor.update_json(mode="scroll")
+            print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + " scroll (firebase)")
+            await cursor.update_json(mode="scrolls_data")
+            print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + " scrolls_data (firebase)")
+            await cursor.update_json(mode="items_data")
+            print(f"{termcolor.colored((str(datetime.now()))[:-7], 'green', attrs=['dark', 'bold'])} " + info_text + f"{termcolor.colored('Fetch & Updated', 'magenta')}" + " items_data (firebase)")
+            return 
+
         try:
             users = await get_human_stats()
             if users == {}: raise ValueError
