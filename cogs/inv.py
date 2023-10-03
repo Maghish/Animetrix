@@ -5,6 +5,37 @@ from discord.ext import commands
 from fun_config import *
 
 
+# here / page
+class Page(View):
+
+    def __init__(self, type="Inventory", user=None, asset: list = None, channel=None):
+        self.type = type
+        self.user = user
+        self.asset = asset
+        self.channel = channel
+        self.page_index = 0
+
+
+    async def paginate(self, type, user):
+        if type != "Inventory":
+            embed1 = self.asset[0]
+            embed2 = self.asset[1]
+            if self.page_index == 0:
+                self.add_item(self.next_button)
+                await self.channel.send(embed=embed1, view=self)  
+
+
+    @discord.ui.button(label="▶️", style=discord.ButtonStyle.green)
+    async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        self.page_index += 1
+
+
+
+
+
+
+
 
 class Scroll(commands.Cog):
     def __init__(self, client: commands.Bot):
@@ -37,6 +68,7 @@ class Scroll(commands.Cog):
                     emoji = items["emoji"]
                     active = items["active"]
                     level = items["Level"]
+                    star = items["star"]
                     if amount < 1:
                         pass
                     else:
@@ -44,7 +76,7 @@ class Scroll(commands.Cog):
                             active = ""
                         else:
                             active = "**[ACTIVE]**"
-                        list_of_all_fruits = list_of_all_fruits + f"{emoji} | {name} x{amount} ・ Lv{level} {active}\n"
+                        list_of_all_fruits = list_of_all_fruits + f"{emoji} | {name} {await convert_star(star=star)} ・ Lv{level} {active}\n"
                         continue
 
                 embed.add_field(name="\n",value=list_of_all_fruits)
@@ -77,7 +109,7 @@ class Scroll(commands.Cog):
 
     
     @fruits.command()
-    async def info(self, ctx, item = None):
+    async def info(self, ctx,*,item = None):
         user = ctx.author   
         users = await get_scroll_data()
         name = None
@@ -123,18 +155,76 @@ class Scroll(commands.Cog):
                 return
         
 
-        embed = discord.Embed(
+        embed1 = discord.Embed(
             title= f"{ctx.author.display_name} - Lv{level} {name}",
-            description= attributes[0],
+            description="This provides all the information you needed to know about the fruit. ",
             color = 0xaa5bfc,
             timestamp= datetime.datetime.utcnow()
         )
-        embed.add_field(name="\n", value=f"🥭・Duplicates - {amount - 1}\n🔼・Level - {level}\n✨・Rarity - {attributes[2]}")
-        embed.set_thumbnail(url=attributes[1])
-        embed.add_field(name="\n", value="\n", inline=False)
-        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
-        await ctx.send(embed = embed)
+        embed1.add_field(name="Description", value=attributes[0], inline=False)
+        embed1.add_field(name="\n", value=f"🔮 Duplicates - {amount - 1}\n🔼 Level - {level}\n✨ Rarity - {attributes[2]}", inline= False)
+        field_value = ""
+        for move in ability:
+            field_value = field_value + f"{move['emoji']} {move['ability_name']}\n"
+            continue
+
+        embed1.add_field(name="Abilities", value=field_value, inline=False)
+        embed1.add_field(name="\n", value="\n", inline=False)
+        embed1.add_field(name="\n", value="\n", inline=False)
+        embed1.set_thumbnail(url=attributes[1])
+        embed1.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
+
+
+        embed2 = discord.Embed(
+            title= f"{ctx.author.display_name} - Lv{level} {name}",
+            description="This provides all the information you needed to know about the fruit. ",
+            color = 0xaa5bfc,
+            timestamp= datetime.datetime.utcnow()
+        )
+
+
+
+        for move in ability:
+            if move['level'] <= level:
+                title = f"{move['emoji']} {move['ability_name']}"
+            else:
+                title = f"{move['emoji']} {move['ability_name']} 🔒"
+
+            if not move['repeat']:
+                field_value = f"\n🔼 Level - {move['level']}\n💥 Damage - {move['dmg']}\n⚡ Chakra - {move['chakra']}\n🍻 Effects - *None*"
+            else:
+                field_value = f"\n🔼 Level - {move['level']}\n💥 Damage - {move['dmg']}\n⚡ Chakra - {move['chakra']}\n🍻 Effects - {move['repeat'][0]} {move['repeat'][1]}"
+            
+
+            if move['effect_break']:
+                field_value = field_value + "\n🛑 This move breaks - "
+                for effects in move['effect_break']:
+                    field_value = field_value + f"{effects}, "
+                    continue
+                field_value = field_value[:-1]
+                    
+            
+            if move['effect_ignore']:
+                field_value = field_value + "\n🎍 This move gets broke by - "
+                for effects in move['effect_ignore']:
+                    field_value = field_value + f"{effects}, "
+                    continue
+                field_value = field_value[:-1]
+
+            field_value = field_value + "\n"
+
+            
+            embed2.add_field(name=title, value=field_value, inline=False)
+
+        embed2.add_field(name="\n", value="\n", inline=False)
+        embed2.set_thumbnail(url=attributes[1])
+        embed2.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
         
+        channel = self.client.get_channel(ctx.channel)
+        default = Page(type="Info", user=ctx.author, asset=[embed1, embed2], channel=channel)
+        await default.paginate("Info", ctx.author)
+
+
 
 class Inventory(commands.Cog):
     

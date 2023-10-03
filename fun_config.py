@@ -215,9 +215,9 @@ async def heal_human(user, change = 0, mode = ("HP", "MaxHP", "Energy", "MaxEner
 
             return
         else:
-            ...
+            pass
     except:
-        ...
+        pass
     
     users[str(user.id)][mode] += int(change)
         
@@ -390,11 +390,6 @@ async def set_scroll_active(user, scroll_name):
 
                 users[str(user.id)]["Scrolls"][index]["active"] = False
                 
-                with open(scroll_json_file, "w") as json_file:
-                    json.dump(users, json_file, indent=1)
-
-                users[str(user.id)]["Scrolls"][index]["amount"] -= 1
-
                 with open(scroll_json_file, "w") as json_file:
                     json.dump(users, json_file, indent=1)
 
@@ -642,7 +637,7 @@ async def claim_crystal(user, crystal_name, amount):
                     price = items["price"]
                     emoji = items["emoji"]
                     value = items["value"]
-                    rarity = items["rarity"]
+                    stars = items["stars"]
                     break
                 else:
                     pass
@@ -671,11 +666,11 @@ async def claim_crystal(user, crystal_name, amount):
             index += 1
 
         if t == None:
-            obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "rarity": rarity}
+            obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "stars": stars}
             users[str(user.id)]["Crystal"].append(obj)
 
     except:
-        obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "rarity": rarity}
+        obj = {"item": name_, "amount": amount, "emoji":emoji, "value": value, "mode": mode, "stars": stars}
         users[str(user.id)]["Crystal"] = [obj]
 
     users[str(user.id)]["Fragments"] -= cost
@@ -697,8 +692,8 @@ async def open_crystal(user, crystal_name):
                 if items["mode"] == "Shop/Crystal":
                     name_ = items["itemname"]
                     mode = items["mode"]
-                    rarity = items["rarity"]
                     value = items["value"]
+                    stars = items["stars"]
                     break
                 else:
                     pass
@@ -734,11 +729,19 @@ async def open_crystal(user, crystal_name):
         data = (data)
         for scroll in data:
             if scroll["mode"].endswith("Scrolls"):
-                if scroll["rarity"] == rarity:
+                t = 0
+                for star in stars:
+                    if star in scroll["stars"]:
+                        t = 1
+                        continue
+                    else:
+                        t = 0
+                        pass
+
+                if t != 0:
                     all_scrolls.append(scroll["itemname"])
                     continue
-                else:
-                    pass
+
             else:
                 pass
             
@@ -746,27 +749,36 @@ async def open_crystal(user, crystal_name):
     selected_scrolls = []
 
     for _ in range(0, value):
-        selected = random.choice(all_scrolls)
-        selected_scrolls.append(selected)
+
+        
+        while True:
+            selected = random.choice(all_scrolls)
+
+            t = 0
+            for index in range(1, 8):
+
+                if [selected, index] in selected_scrolls:
+                    t += 1
+                    pass
+
+            if t == 0:
+                break
+            else: 
+                continue
+
+                
+        selected_star = random.choice(await check_rarity(stars))
+        selected_scrolls.append([selected, selected_star])
         # and Add them to the user's pocket 
         users = await get_scroll_data()
         await create_scroll(user)
-        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji","mode", "ability"])
+        attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji", "mode", "ability"])
+        # Get the min and max stars of this scroll and find out did they get the min or max and according to that increase their dmg like 10% and their chakra usage
         try:
-            index = 0
-            t = None
-            for thing in users[str(user.id)]["Scrolls"]:
-                n = thing["item"]
-                if n == selected:
-                    users[str(user.id)]["Scrolls"][index]["amount"] += 1
-                    t = 1
-                    break
-                index+=1 
-            if t == None:
-                obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0}
-                users[str(user.id)]["Scrolls"].append(obj)
+            obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0, "star": selected_star}
+            users[str(user.id)]["Scrolls"].append(obj)
         except:
-            obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0}
+            obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0, "star": selected_star}
             users[str(user.id)]["Scrolls"] = [obj]        
 
         with open(scroll_json_file,"w") as f:
@@ -781,6 +793,7 @@ async def open_crystal(user, crystal_name):
             with open(inventory_json_file, "w") as json_file:
                 json.dump(users,json_file, indent=1)
         else:
+            index += 1
             pass
 
     return [True, name_, selected_scrolls]
@@ -863,3 +876,31 @@ async def change_backpack(user, item, amount, action):
         json.dump(users, json_file, indent=1)
 
     return [True, name_, amount]
+
+
+async def convert_star(star):
+    if star == 1:
+        return "⭐"
+    elif star == 2:
+        return "⭐⭐"
+    elif star == 3:
+        return "⭐⭐⭐"
+    elif star == 4:
+        return "⭐⭐⭐⭐"
+    elif star == 5:
+        return "⭐⭐⭐⭐⭐"
+    elif star == 6:
+        return "⭐⭐⭐⭐⭐⭐"
+    elif star == 7:
+        return "⭐⭐⭐⭐⭐⭐⭐"
+    
+async def check_rarity(the_list):
+    a = len(the_list)
+    b = (a * 2) + 2
+    new_list = []
+
+    for i in the_list:
+        new_list.extend([i] * (b - 2))
+        b = b - 2
+
+    return new_list

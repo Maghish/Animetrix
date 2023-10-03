@@ -131,7 +131,7 @@ class Duel(commands.Cog):
     def __init__(self, client:commands.Bot):
         self.client = client
         self.effects = []
-        self.spawn_channel = []
+        self.spawn_channel = [{"guild_id": 1036647915826991266, "channel_id": 1149355492917911572},{"guild_id": 1036647915826991266, "channel_id": 1149355604041797662},{"guild_id": 1036647915826991266, "channel_id": 1149355664473337896}]
         self.effect_loop.start()
         self.boss_spawn.start()
 
@@ -143,7 +143,7 @@ class Duel(commands.Cog):
         self.boss_spawn.cancel()
 
 
-    @tasks.loop(seconds=15)
+    @tasks.loop(minutes=40)
     async def boss_spawn(self):
         for guild in self.client.guilds:
             for things in self.spawn_channel:
@@ -179,8 +179,7 @@ class Duel(commands.Cog):
                     the_button.callback = startcall
                     await channel.send(embed=embed, view=the_view)
                     
-                    
-                    break
+                    continue
                 else:
                     pass
 
@@ -912,7 +911,7 @@ class Duel(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 120, commands.BucketType.user)
-    async def npcfight(self, ctx, npc_name):
+    async def npcfight(self, ctx,*, npc_name):
         attributes = await get_all_attributes(npc_name, scroll_data_json_file, Key=["itemname"])
         if attributes != []:
            attributes = attributes 
@@ -1492,7 +1491,7 @@ class Quests(commands.Cog):
                     if quest[2] == "BOSS":
                         field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x1・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
                     else:
-                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1] * 8} Chibucks, {attributes[2][0] * 8} EXP"
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {int(attributes[2][1]) * 8} Chibucks, {int(attributes[2][0]) * 8} EXP"
                     continue
                 else:
                     pass
@@ -1506,11 +1505,11 @@ class Quests(commands.Cog):
             for quest in all_quests:
                 index += 1
                 if quest[1] is False and quest[0] not in all_quests:
-                    attributes = await get_all_attributes(quest[0], scroll_data_json_file, Key=["level", "rarity"])
+                    attributes = await get_all_attributes(quest[0], scroll_data_json_file, Key=["level", "rarity", "rewards"])
                     if quest[2] == "BOSS":
                         field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x1・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
                     else:
-                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1]} Chibucks, {attributes[2][0]} EXP"
+                        field_value = field_value + f"\n**[{index}]** Defeat {quest[0]} x8・Lv{attributes[0]} | {attributes[1]} ✨ **|** {attributes[2][1] * 8} Chibucks, {attributes[2][0] * 8} EXP"
                     continue
                 else:
                     pass

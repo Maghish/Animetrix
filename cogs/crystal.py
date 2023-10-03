@@ -75,6 +75,7 @@ class Crystal(commands.Cog):
     async def open(self, ctx,*, crystal_name):
 
 
+
         res = await open_crystal(ctx.author, crystal_name)
 
         if not res[0]:
@@ -94,16 +95,13 @@ class Crystal(commands.Cog):
             message = await ctx.send(msg)
             for things in res[2]:
                 await asyncio.sleep(0.5)
-                msg = str(msg + f"\n1x {things}")
+                msg = str(msg + f"\n{await convert_star(things[1])} {things[0]}")
                 await message.edit(content=msg)
 
 
         
 
-    @crystals.command()
-    async def info(self, ctx, crystal_id):
-        # here / info command
-        ...
+
 
     
 
