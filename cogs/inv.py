@@ -1,39 +1,8 @@
-from typing import Any
 import datetime
 import discord
 from discord.ext import commands
 from fun_config import *
-
-
-# here / page
-class Page(View):
-
-    def __init__(self, type="Inventory", user=None, asset: list = None, channel=None):
-        self.type = type
-        self.user = user
-        self.asset = asset
-        self.channel = channel
-        self.page_index = 0
-
-
-    async def paginate(self, type, user):
-        if type != "Inventory":
-            embed1 = self.asset[0]
-            embed2 = self.asset[1]
-            if self.page_index == 0:
-                self.add_item(self.next_button)
-                await self.channel.send(embed=embed1, view=self)  
-
-
-    @discord.ui.button(label="▶️", style=discord.ButtonStyle.green)
-    async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        self.page_index += 1
-
-
-
-
-
+from .util import util1
 
 
 
@@ -46,50 +15,14 @@ class Scroll(commands.Cog):
     async def fruits(self, ctx):
         if ctx.invoked_subcommand is None:
             await create_scroll(ctx.author)
-            user = ctx.author
             users = await get_scroll_data()
-
             try:
-                Inventory = users[str(user.id)]["Scrolls"]
+                Inventory = users[str(ctx.author.id)]["Scrolls"]
             except:
                 Inventory = []
 
-            embed = discord.Embed(
-                title=f"{ctx.author.global_name}'s Fruits",
-                description="This is the collection of fruits that you have obtained. Each fruit will disappear they got used.",
-                color= 0xaa5bfc,
-                timestamp=datetime.datetime.utcnow()
-            )   
-            list_of_all_fruits = ""
-            try:
-                for items in Inventory:
-                    name = items["item"]
-                    amount = items["amount"]
-                    emoji = items["emoji"]
-                    active = items["active"]
-                    level = items["Level"]
-                    star = items["star"]
-                    if amount < 1:
-                        pass
-                    else:
-                        if active is False:
-                            active = ""
-                        else:
-                            active = "**[ACTIVE]**"
-                        list_of_all_fruits = list_of_all_fruits + f"{emoji} | {name} {await convert_star(star=star)} ・ Lv{level} {active}\n"
-                        continue
 
-                embed.add_field(name="\n",value=list_of_all_fruits)
-            except:
-                pass
-
-            if list_of_all_fruits == "":
-                embed.add_field(name="\n",value="*You haven't obtained any fruits yet*")
-
-            embed.add_field(name="\n", value="\n", inline=False)
-            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
-
-            await ctx.send(embed=embed)
+            await util1.Scrolls(ctx, Inventory).send()
 
 
     @fruits.command(aliases=["use"])
@@ -221,9 +154,6 @@ class Scroll(commands.Cog):
         embed2.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
         
         channel = self.client.get_channel(ctx.channel)
-        default = Page(type="Info", user=ctx.author, asset=[embed1, embed2], channel=channel)
-        await default.paginate("Info", ctx.author)
-
 
 
 class Inventory(commands.Cog):

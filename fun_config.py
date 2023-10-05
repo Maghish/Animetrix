@@ -1,6 +1,6 @@
 import discord
-import random
 from discord.ui import View, Button
+import random
 import json
 import os
 
@@ -603,8 +603,11 @@ async def sep_int_and_str(stuff):
     item_name = ""
     for letter in stuff:
         try:
-            letter = int(letter)
-            amount = amount + str(letter)
+            if item_name == "":
+                raise ValueError
+            else:
+                letter = int(letter)
+                amount = amount + str(letter)
             continue
         except:
             item_name = item_name + str(letter)
@@ -674,7 +677,7 @@ async def claim_crystal(user, crystal_name, amount):
         users[str(user.id)]["Crystal"] = [obj]
 
     users[str(user.id)]["Fragments"] -= cost
-
+                         
     with open(inventory_json_file, "w") as json_file:
         json.dump(users, json_file, indent=1)
 
