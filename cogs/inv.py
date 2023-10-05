@@ -25,19 +25,35 @@ class Scroll(commands.Cog):
 
 
     @fruits.command(aliases=["use"])
-    async def select(self, ctx, *, item):
+    async def select(self, ctx, index: int):
         await create_scroll(ctx.author)
-        res = await set_scroll_active(ctx.author, item)
+        user = ctx.author
+        users = await get_scroll_data()
+        item = None
+        current_index = 1
+        for scroll in users[str(user.id)]["Scrolls"]:
+            if current_index == index:
+                item = [scroll["item"], scroll["star"]]
+                break
+            else:
+                current_index += 1
+                continue
 
-        if not res[0]:
-            if res[1] == 1:
-                await ctx.reply(f"There is no fruit/scroll called {item} ")
-            elif res[1] == 2:
-                await ctx.reply(f"The fruit is already active!\nTry `a!fruits`")
-            elif res[1] == 3:
-                await ctx.reply(f"You don't have the fruit/scroll!")
+        if item == None:
+            await ctx.reply("Invalid index!")
+
         else:
-            await ctx.reply(f"{res[1]} activated!\nType `a!fruits info` to view the fruit/scroll!")
+            res = await set_scroll_active(ctx.author, item)
+
+            if not res[0]:
+                if res[1] == 1:
+                    await ctx.reply(f"There is no fruit/scroll called {item[0]} ")
+                elif res[1] == 2:
+                    await ctx.reply(f"The fruit is already active!\nTry `a!fruits`")
+                elif res[1] == 3:
+                    await ctx.reply(f"You don't have the fruit/scroll!")
+            else:
+                await ctx.reply(f"{res[1]} activated!\nType `a!fruits info` to view the fruit/scroll!")
 
     
     @fruits.command()

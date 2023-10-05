@@ -3,6 +3,8 @@ from fun_config import *
 import datetime
 import math
 
+# This is the page view for backpack command
+
 class Backpack():
 
     def __init__(self, ctx, content):

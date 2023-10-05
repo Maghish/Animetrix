@@ -91,8 +91,6 @@ class Scrolls():
             self.outer_instance = outer_instance
 
         async def build(self):
-
-
             embed = discord.Embed(
                 title=f"{self.user.global_name}'s Fruits",
                 description="This is the collection of fruits that you have obtained. Each fruit will disappear they got used.",
@@ -101,6 +99,7 @@ class Scrolls():
             )   
             list_of_all_fruits = []
             try:
+                index = 1
                 for items in self.content:
                     name = items["item"]
                     amount = items["amount"]
@@ -115,7 +114,8 @@ class Scrolls():
                             active = ""
                         else:
                             active = "**[ACTIVE]**"
-                        list_of_all_fruits.append(f"{emoji} | {name} {await convert_star(star=star)} ・ Lv{level} {active}\n")
+                        list_of_all_fruits.append(f"**[{index}]** {emoji} | {name} {await convert_star(star=star)} ・ Lv{level} {active}\n")
+                        index += 1
                         continue
          
                 list_of_all_fruits = await self.outer_instance.get_content(list_of_all_fruits)

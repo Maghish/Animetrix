@@ -331,7 +331,7 @@ async def buy_this(user,item_name,amount):
 
 
 
-async def set_scroll_active(user, scroll_name):
+async def set_scroll_active(user, scroll):
     # Check if the item exists
     name_ = None
     with open(scroll_data_json_file, "r") as json_file:
@@ -340,7 +340,7 @@ async def set_scroll_active(user, scroll_name):
         for item in iT:
             name = item["itemname"]
             name_lower = name.lower()
-            if name_lower == scroll_name.lower():
+            if name_lower == scroll[0].lower():
                 name_ = name
                 break
             else:
@@ -354,7 +354,7 @@ async def set_scroll_active(user, scroll_name):
 
     for items in users[str(user.id)]["Scrolls"]:
         name = items["item"]
-        if name == name_:
+        if name == name_ and items["star"] == scroll[1]:
             amount = items["amount"]
             if amount <= 0:
                 return [False, 3]
@@ -368,7 +368,7 @@ async def set_scroll_active(user, scroll_name):
     for items in users[str(user.id)]["Scrolls"]:
         name = items["item"]
         index += 1
-        if name == name_:
+        if name == name_ and items["star"] == scroll[1]:
             t = 1
             # Then check if it's already active
             active_state = items["active"]

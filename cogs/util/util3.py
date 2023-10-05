@@ -4,6 +4,8 @@ from emoji import emojize
 import datetime
 import math
 
+# This is the page view for crystals command
+
 class Crystals():
 
     def __init__(self, ctx, content):
