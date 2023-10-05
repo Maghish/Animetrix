@@ -1,9 +1,10 @@
 import discord 
 from fun_config import *
+from emoji import emojize
 import datetime
 import math
 
-class Backpack():
+class Crystals():
 
     def __init__(self, ctx, content):
         self.ctx = ctx
@@ -84,43 +85,41 @@ class Backpack():
             self.outer_instance = outer_instance
 
         async def build(self):
-
             embed = discord.Embed(
-                title=f"{self.user.global_name}'s Backpack",
-                description="Here you can view all items in your backpack. use `a!backpack add <item_name>` to add it to your backpack or if you want to remove it, then use `a!backpack remove <item_name>` to remove it.",
-                color= 0xaa5bfc,
-                timestamp=datetime.datetime.utcnow() 
+                title=f"{self.user.global_name}'s Crystals", 
+                description="This is the list of all the crystals you have ready to open. Use `a!crystals open <crystal_name>` to open the crystal! To inspect the crystal, type `a!crystals info <crystal_name>`",
+                color = 0xaa5bfc,
+                timestamp = datetime.datetime.utcnow()
             )
-
             
-
-            backpack_items = []
+            list_of_all_crystals = []
             try:
-                for items in self.content:
-                    if items["amount"] <= 0:
+                for crystal in self.content:
+                    name = crystal["item"]
+                    amount = crystal["amount"]
+                    emoji = crystal["emoji"]
+                    if amount < 1:
                         pass
                     else:
-                        backpack_items.append(f"{items['emoji']} | {items['item']} x{items['amount']}\n")
-                        continue
+                        list_of_all_crystals.append(f"{emojize(emoji)} ・ {name} x{amount}\n")
+
+                list_of_all_crystals = await self.outer_instance.get_content(list_of_all_crystals)
+                list_of_all_crystals_string = ""
+                for crystal in list_of_all_crystals:
+                    list_of_all_crystals_string = list_of_all_crystals_string + crystal
+                    continue
+
+                embed.add_field(name="\n", value=list_of_all_crystals_string)
             except:
                 pass
 
-            if not backpack_items:
-                backpack_items = "*No items in your backpack*"
-
-            backpack_items = await self.outer_instance.get_content(backpack_items)
-            backpack_items_string = ""
-            for items in backpack_items:
-                backpack_items_string = backpack_items_string + items
-                continue
-
-            embed.add_field(name="Backpack", value=backpack_items_string)
-
+            if not list_of_all_crystals:
+                embed.add_field(name="\n", value="*You haven't obtained any crystals yet!*")
+    
             embed.add_field(name="\n", value="\n", inline=False)
-            embed.set_footer(icon_url=(self.user.display_avatar), text=f"For {self.user.global_name}")
-
-            return embed
+            embed.set_footer(icon_url=(self.user.display_avatar), text= f"For {self.user.global_name}")
         
+            return embed
     
     async def get_content(self, content):
         start_index = (self.current_page - 1) * self.num_per_page
@@ -139,4 +138,3 @@ class Backpack():
         embed = await self.BuildEmbed(self.ctx.author, content, self).build()
         my_view = self.PageView(self)
         await self.message.edit(embed=embed, view=my_view)
-        

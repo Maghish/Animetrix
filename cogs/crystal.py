@@ -4,6 +4,7 @@ from emoji import emojize
 import datetime
 import asyncio
 from fun_config import *
+from .util import util3
 
 class Crystal(commands.Cog):
     
@@ -41,35 +42,15 @@ class Crystal(commands.Cog):
             except:
                 Crystals = []
 
-            embed = discord.Embed(
-                title=f"{ctx.author}'s Crystals", 
-                description="This is the list of all the crystals you have ready to open. Use `a!crystals open <crystal_name>` to open the crystal! To inspect the crystal, type `a!crystals info <crystal_name>`",
-                color = 0xaa5bfc,
-                timestamp = datetime.datetime.utcnow()
-            )
+            Content = []
+            for crystal in Crystals:
+                if crystal["amount"] < 1:
+                    pass
+                else:
+                    Content.append(crystal)
+                    continue
             
-            list_of_all_crystals = ""
-            try:
-                for crystal in Crystals:
-                    name = crystal["item"]
-                    amount = crystal["amount"]
-                    emoji = crystal["emoji"]
-                    if amount < 1:
-                        pass
-                    else:
-                        list_of_all_crystals = list_of_all_crystals + f"{emojize(emoji)} ・ {name} x{amount}\n"
-                embed.add_field(name="\n", value=list_of_all_crystals)
-            except:
-                pass
-
-            if list_of_all_crystals == "":
-                embed.add_field(name="\n", value="*You haven't obtained any crystals yet!*")
-    
-            embed.add_field(name="\n", value="\n", inline=False)
-            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
-
-            await ctx.send(embed=embed)
-
+            await util3.Crystals(ctx, Content).send()
         
     @crystals.command()
     async def open(self, ctx,*, crystal_name):
