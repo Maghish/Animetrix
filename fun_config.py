@@ -763,6 +763,8 @@ async def open_crystal(user, crystal_name):
                 if [selected, index] in selected_scrolls:
                     t += 1
                     pass
+                else:
+                    pass
 
             if t == 0:
                 break
@@ -775,11 +777,46 @@ async def open_crystal(user, crystal_name):
         # and Add them to the user's pocket 
         users = await get_scroll_data()
         await create_scroll(user)
+        
+        
         attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji", "mode", "ability"])
         # Get the min and max stars of this scroll and find out did they get the min or max and according to that increase their dmg like 10% and their chakra usage
         try:
-            obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0, "star": selected_star}
-            users[str(user.id)]["Scrolls"].append(obj)
+            t = 0
+            for scroll in users[str(user.id)]["Scrolls"]:
+                if scroll["item"] == selected:
+                    t = 1
+                else:
+                    pass
+            if t == 0:
+                obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0, "star": selected_star}
+                users[str(user.id)]["Scrolls"].append(obj)
+            else:
+                if selected_star == 1:
+                    duplicate_reward = int(random.randint(100, 300))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                elif selected_star == 2:
+                    duplicate_reward = int(random.randint(400, 700))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                elif selected_star == 3:
+                    duplicate_reward = int(random.randint(800, 1000))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                elif selected_star == 4:
+                    duplicate_reward = int(random.randint(2000, 3000))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                elif selected_star == 5:
+                    duplicate_reward = int(random.randint(10000, 20000))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                elif selected_star == 6:
+                    duplicate_reward = int(random.randint(50000, 100000))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                elif selected_star == 7:
+                    duplicate_reward = int(random.randint(100000, 1000000))
+                    await update_bank(user, duplicate_reward, "Chibucks")
+                
+                selected_scrolls[_][0] = f"~~{selected_scrolls[_][0]}~~  <:chibucks:1141752496671445084> {duplicate_reward} Chibucks"
+                
+                    
         except:
             obj = {"item": selected , "amount" : 1, "mode": attributes[1], "emoji": attributes[0], "active": False, "ability": attributes[2], "Level": 1, "exp": 0, "star": selected_star}
             users[str(user.id)]["Scrolls"] = [obj]        

@@ -11,26 +11,12 @@ class Crystal(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
 
-    @commands.command()
-    async def claim(self, ctx,*, crystal_name):
-
-        res = await sep_int_and_str(crystal_name)   
-        item, amount = res[0].rstrip(), res[1]
-
-        res = await claim_crystal(ctx.author, item, amount)
-
-        if not res[0]:
-            if res[1] == 1:
-                await ctx.send("The item does not exist")
-            if res[1] == 2:
-                await ctx.send("You don't have that much Fragments to claim this crystal!")
-        else:
-            await ctx.send(f"You have claimed {res[2]}x {res[1]}\nUse `a!crystals` to view all the claimed crystals.")
+    
     
 
 
 
-    @commands.group()
+    @commands.group(aliases = ["c"])
     async def crystals(self, ctx):
         if ctx.invoked_subcommand == None:
             await open_inv(ctx.author)
@@ -55,8 +41,6 @@ class Crystal(commands.Cog):
     @crystals.command()
     async def open(self, ctx,*, crystal_name):
 
-
-
         res = await open_crystal(ctx.author, crystal_name)
 
         if not res[0]:
@@ -78,6 +62,22 @@ class Crystal(commands.Cog):
                 await asyncio.sleep(0.5)
                 msg = str(msg + f"\n{await convert_star(things[1])} {things[0]}")
                 await message.edit(content=msg)
+
+    @crystals.command()
+    async def claim(self, ctx,*, crystal_name):
+
+        res = await sep_int_and_str(crystal_name)   
+        item, amount = res[0].rstrip(), res[1]
+
+        res = await claim_crystal(ctx.author, item, amount)
+
+        if not res[0]:
+            if res[1] == 1:
+                await ctx.send("The item does not exist")
+            if res[1] == 2:
+                await ctx.send("You don't have that much Fragments to claim this crystal!")
+        else:
+            await ctx.send(f"You have claimed {res[2]}x {res[1]}\nUse `a!crystals` to view all the claimed crystals.")
 
 
         
