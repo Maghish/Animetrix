@@ -631,7 +631,7 @@ class Duel(commands.Cog):
                     FIELD_VALUE = FIELD_VALUE + f"⭐ **Ability:** {user1_last_move[0]}\n💥 **Damage: ** {user1_last_move[2]} \n⚡ **Chakra:** {user1_last_move[1]}\n🍻 **Effect:** {user1_last_move[3]}\n"
 
 
-                embed.add_field(name=f"{ctx.author.display_name} **[{ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
+                embed.add_field(name=f"{ctx.author.display_name} **[{await convert_star(ALL_STUFF[0][6])} {ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
 
                 health_bar = await make_bars(user, "HP", "MaxHP", "🟥", "⬛", 6)
                 energy_bar = await make_bars(user, "Energy", "MaxEnergy", "🟦", "⬛", 5)
@@ -668,7 +668,7 @@ class Duel(commands.Cog):
 
 
 
-                embed.add_field(name=f"{user.display_name} **[{ALL_STUFF[1][2]}]**", value=FIELD_VALUE)
+                embed.add_field(name=f"{user.display_name} **[{await convert_star(ALL_STUFF[1][6])} {ALL_STUFF[1][2]}]**", value=FIELD_VALUE)
                 embed.add_field(name="\n", value="\n", inline=False)
                 embed.set_footer(icon_url=("https://media.discordapp.net/attachments/1126174753359679498/1148507348835520562/e4ab08280ed1f76ddba1705b5852d8e1.png?width=602&height=602"), text= f"{ctx.author.global_name} vs {user.global_name}")
                 await ctx.send(embed=embed)
@@ -839,7 +839,7 @@ class Duel(commands.Cog):
                             with open(scroll_json_file, "w") as json_file:
                                 json.dump(users, json_file, indent=1)
                             
-                            await ctx.reply(f"Your fruit leveled up! from {lvl} to {temp_level}")
+                            await ctx.send(f"{loop[1]}'s fruit leveled up! from {lvl} to {temp_level}")
                             break
                         else:
                             index += 1
@@ -948,7 +948,7 @@ class Duel(commands.Cog):
 
 
 
-            embed.add_field(name=f"{ctx.author.display_name} **[{ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
+            embed.add_field(name=f"{ctx.author.display_name} **[{await convert_star(ALL_STUFF[0][6])} {ALL_STUFF[0][2]}]**", value=FIELD_VALUE)
 
             # Health Bar
             if npc_current_health is None: 
@@ -958,7 +958,7 @@ class Duel(commands.Cog):
     
             health_bar = await make_bars(ctx.author, npc_current_health, ALL_STUFF[1][6]["HP"], "🟥", "⬛", 6)
             # Static bar for energy bar
-            energy_bar = await make_bars(ctx.author, ALL_STUFF[1][6]["chakra"], ALL_STUFF[1][6]["chakra"], "🟨", "⬛", 5)
+            energy_bar = await make_bars(ctx.author, ALL_STUFF[1][6]["chakra"], ALL_STUFF[1][6]["chakra"], "⬛", "⬛", 5)
             # Add abilities in the embed
             FIELD_VALUE = f"HP {health_bar}\nChakra {energy_bar}\n\n"
             for abilities in ALL_STUFF[1][4]:

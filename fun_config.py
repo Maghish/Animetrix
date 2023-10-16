@@ -429,6 +429,7 @@ async def create_duel(user1, user2):
             user1_fruit_name = thing["item"]
             user1_fruit_emoji = thing["emoji"]
             user1_fruit_level = thing["Level"]
+            user1_fruit_star = thing["star"]
             user1_fruit_abilities = []
             for ability in thing["ability"]:
                 user1_fruit_abilities.append([ability["ability_name"], ability["emoji"], ability["dmg"], ability["chakra"], ability["level"], ability["repeat"]])
@@ -438,11 +439,12 @@ async def create_duel(user1, user2):
             user2_fruit_name = thing["item"]
             user2_fruit_emoji = thing["emoji"]
             user2_fruit_level = thing["Level"]
+            user2_fruit_star = thing["star"]
             user2_fruit_abilities = []
             for ability in thing["ability"]:
                 user2_fruit_abilities.append([ability["ability_name"], ability["emoji"], ability["dmg"], ability["chakra"], ability["level"], ability["repeat"]])
 
-    return [[user1_dmg, user1_level, user1_fruit_name, user1_fruit_emoji, user1_fruit_abilities, user1_fruit_level], [user2_dmg, user2_level, user2_fruit_name, user2_fruit_emoji, user2_fruit_abilities, user2_fruit_level]]
+    return [[user1_dmg, user1_level, user1_fruit_name, user1_fruit_emoji, user1_fruit_abilities, user1_fruit_level, user1_fruit_star], [user2_dmg, user2_level, user2_fruit_name, user2_fruit_emoji, user2_fruit_abilities, user2_fruit_level, user2_fruit_star]]
 
 async def create_brawl_npc(user, npc):
     users = await get_human_stats()
@@ -454,13 +456,14 @@ async def create_brawl_npc(user, npc):
             user_fruit_name = thing["item"]
             user_fruit_emoji = thing["emoji"]
             user_fruit_level = thing["Level"]
+            user_fruit_star = thing["star"]
             user_fruit_abilities = []
             for ability in thing["ability"]:
                 user_fruit_abilities.append([ability["ability_name"], ability["emoji"], ability["dmg"], ability["chakra"], ability["level"], ability["repeat"]])
 
     attributes_for_npc = await get_all_attributes(npc, scroll_data_json_file, Key=["mode", "itemname", "level", "img", "ability", "rewards", "stats"])
 
-    return [[user_dmg, user_level, user_fruit_name, user_fruit_emoji, user_fruit_abilities, user_fruit_level], [attributes_for_npc[0], attributes_for_npc[1], attributes_for_npc[2], attributes_for_npc[3], attributes_for_npc[4], attributes_for_npc[5], attributes_for_npc[6]]]
+    return [[user_dmg, user_level, user_fruit_name, user_fruit_emoji, user_fruit_abilities, user_fruit_level, user_fruit_star], [attributes_for_npc[0], attributes_for_npc[1], attributes_for_npc[2], attributes_for_npc[3], attributes_for_npc[4], attributes_for_npc[5], attributes_for_npc[6]]]
     
     
 async def make_bars(user, mode1, mode2, square1:str, square2:str, healthDashes):
@@ -780,11 +783,10 @@ async def open_crystal(user, crystal_name):
         
         
         attributes = await get_all_attributes(selected, scroll_data_json_file, Key=["emoji", "mode", "ability"])
-        # Get the min and max stars of this scroll and find out did they get the min or max and according to that increase their dmg like 10% and their chakra usage
         try:
             t = 0
             for scroll in users[str(user.id)]["Scrolls"]:
-                if scroll["item"] == selected:
+                if scroll["item"] == selected and scroll["star"] == selected_star:
                     t = 1
                 else:
                     pass

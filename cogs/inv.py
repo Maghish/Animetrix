@@ -20,7 +20,6 @@ class Scroll(commands.Cog):
             except:
                 Inventory = []
 
-
             await util1.Scrolls(ctx, Inventory).send()
 
 
@@ -72,7 +71,7 @@ class Scroll(commands.Cog):
                     amount = items["amount"]
                     ability = items["ability"]
                     level = items["Level"]
-                    attributes = await get_all_attributes(name, scroll_data_json_file, Key=["desc", "img", "rarity"])
+                    attributes = await get_all_attributes(name, scroll_data_json_file, Key=["desc", "img", "star"])
                     break
                 else:
                     pass
