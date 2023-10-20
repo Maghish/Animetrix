@@ -12,7 +12,6 @@ firebase_admin.initialize_app(cred, {"databaseURL": "https://animetrix-7e080-def
 
 
 
-
 class DB():
 
     def __init__(self):
@@ -69,11 +68,11 @@ class DB():
         elif mode == "scrolls_data":
             users = self.db.reference("/scrolls_data").get()
             with open(scroll_data_json_file, "w") as json_file:
-                json.dump(users, json_file, indent=1)
+                json.dump(users, json_file, indent=2)
         elif mode == "items_data":
             users = self.db.reference("/items_data").get()
             with open(items_json_file, "w") as json_file:
-                json.dump(users, json_file, indent=1)
+                json.dump(users, json_file, indent=2)
         
         return users
     

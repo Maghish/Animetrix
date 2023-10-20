@@ -1,9 +1,8 @@
-from typing import Any
 import datetime
 import discord
 from discord.ext import commands
 from fun_config import *
-
+from .util import util1, util2
 
 
 class Scroll(commands.Cog):
@@ -15,69 +14,49 @@ class Scroll(commands.Cog):
     async def fruits(self, ctx):
         if ctx.invoked_subcommand is None:
             await create_scroll(ctx.author)
-            user = ctx.author
             users = await get_scroll_data()
-
             try:
-                Inventory = users[str(user.id)]["Scrolls"]
+                Inventory = users[str(ctx.author.id)]["Scrolls"]
             except:
                 Inventory = []
 
-            embed = discord.Embed(
-                title=f"{ctx.author.global_name}'s Fruits",
-                description="This is the collection of fruits that you have obtained. Each fruit will disappear they got used.",
-                color= 0xaa5bfc,
-                timestamp=datetime.datetime.utcnow()
-            )   
-            list_of_all_fruits = ""
-            try:
-                for items in Inventory:
-                    name = items["item"]
-                    amount = items["amount"]
-                    emoji = items["emoji"]
-                    active = items["active"]
-                    level = items["Level"]
-                    if amount < 1:
-                        pass
-                    else:
-                        if active is False:
-                            active = ""
-                        else:
-                            active = "**[ACTIVE]**"
-                        list_of_all_fruits = list_of_all_fruits + f"{emoji} | {name} x{amount} ・ Lv{level} {active}\n"
-                        continue
-
-                embed.add_field(name="\n",value=list_of_all_fruits)
-            except:
-                pass
-
-            if list_of_all_fruits == "":
-                embed.add_field(name="\n",value="*You haven't obtained any fruits yet*")
-
-            embed.add_field(name="\n", value="\n", inline=False)
-            embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
-
-            await ctx.send(embed=embed)
+            await util1.Scrolls(ctx, Inventory).send()
 
 
     @fruits.command(aliases=["use"])
-    async def select(self, ctx, *, item):
+    async def select(self, ctx, index: int):
         await create_scroll(ctx.author)
-        res = await set_scroll_active(ctx.author, item)
+        user = ctx.author
+        users = await get_scroll_data()
+        item = None
+        current_index = 1
+        for scroll in users[str(user.id)]["Scrolls"]:
+            if current_index == index:
+                item = [scroll["item"], scroll["star"]]
+                break
+            else:
+                current_index += 1
+                continue
 
-        if not res[0]:
-            if res[1] == 1:
-                await ctx.reply(f"There is no fruit/scroll called {item} ")
-            elif res[1] == 2:
-                await ctx.reply(f"The fruit is already active!\nTry `a!fruits`")
-            elif res[1] == 3:
-                await ctx.reply(f"You don't have the fruit/scroll!")
+        if item == None:
+            await ctx.reply("Invalid index!")
+
         else:
-            await ctx.reply(f"{res[1]} activated!\nType `a!fruits info` to view the fruit/scroll!")
+            res = await set_scroll_active(ctx.author, item)
+
+            if not res[0]:
+                if res[1] == 1:
+                    await ctx.reply(f"There is no fruit/scroll called {item[0]} ")
+                elif res[1] == 2:
+                    await ctx.reply(f"The fruit is already active!\nTry `a!fruits`")
+                elif res[1] == 3:
+                    await ctx.reply(f"You don't have the fruit/scroll!")
+            else:
+                await ctx.reply(f"{res[1]} activated!\nType `a!fruits info` to view the fruit/scroll!")
 
     
     @fruits.command()
-    async def info(self, ctx, item = None):
+    async def info(self, ctx,*,item = None):
         user = ctx.author   
         users = await get_scroll_data()
         name = None
@@ -92,7 +71,7 @@ class Scroll(commands.Cog):
                     amount = items["amount"]
                     ability = items["ability"]
                     level = items["Level"]
-                    attributes = await get_all_attributes(name, scroll_data_json_file, Key=["desc", "img", "rarity"])
+                    attributes = await get_all_attributes(name, scroll_data_json_file, Key=["desc", "img", "star"])
                     break
                 else:
                     pass
@@ -123,18 +102,73 @@ class Scroll(commands.Cog):
                 return
         
 
-        embed = discord.Embed(
+        embed1 = discord.Embed(
             title= f"{ctx.author.display_name} - Lv{level} {name}",
-            description= attributes[0],
+            description="This provides all the information you needed to know about the fruit. ",
             color = 0xaa5bfc,
             timestamp= datetime.datetime.utcnow()
         )
-        embed.add_field(name="\n", value=f"🥭・Duplicates - {amount - 1}\n🔼・Level - {level}\n✨・Rarity - {attributes[2]}")
-        embed.set_thumbnail(url=attributes[1])
-        embed.add_field(name="\n", value="\n", inline=False)
-        embed.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
-        await ctx.send(embed = embed)
+        embed1.add_field(name="Description", value=attributes[0], inline=False)
+        embed1.add_field(name="\n", value=f"🔮 Duplicates - {amount - 1}\n🔼 Level - {level}\n✨ Rarity - {attributes[2]}", inline= False)
+        field_value = ""
+        for move in ability:
+            field_value = field_value + f"{move['emoji']} {move['ability_name']}\n"
+            continue
+
+        embed1.add_field(name="Abilities", value=field_value, inline=False)
+        embed1.add_field(name="\n", value="\n", inline=False)
+        embed1.add_field(name="\n", value="\n", inline=False)
+        embed1.set_thumbnail(url=attributes[1])
+        embed1.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
+
+
+        embed2 = discord.Embed(
+            title= f"{ctx.author.display_name} - Lv{level} {name}",
+            description="This provides all the information you needed to know about the fruit. ",
+            color = 0xaa5bfc,
+            timestamp= datetime.datetime.utcnow()
+        )
+
+
+
+        for move in ability:
+            if move['level'] <= level:
+                title = f"{move['emoji']} {move['ability_name']}"
+            else:
+                title = f"{move['emoji']} {move['ability_name']} 🔒"
+
+            if not move['repeat']:
+                field_value = f"\n🔼 Level - {move['level']}\n💥 Damage - {move['dmg']}\n⚡ Chakra - {move['chakra']}\n🍻 Effects - *None*"
+            else:
+                field_value = f"\n🔼 Level - {move['level']}\n💥 Damage - {move['dmg']}\n⚡ Chakra - {move['chakra']}\n🍻 Effects - {move['repeat'][0]} {move['repeat'][1]}"
+            
+
+            if move['effect_break']:
+                field_value = field_value + "\n🛑 This move breaks - "
+                for effects in move['effect_break']:
+                    field_value = field_value + f"{effects}, "
+                    continue
+                field_value = field_value[:-1]
+                    
+            
+            if move['effect_ignore']:
+                field_value = field_value + "\n🎍 This move gets broke by - "
+                for effects in move['effect_ignore']:
+                    field_value = field_value + f"{effects}, "
+                    continue
+                field_value = field_value[:-1]
+
+            field_value = field_value + "\n"
+
+            
+            embed2.add_field(name=title, value=field_value, inline=False)
+
+        embed2.add_field(name="\n", value="\n", inline=False)
+        embed2.set_thumbnail(url=attributes[1])
+        embed2.set_footer(icon_url=(ctx.author.display_avatar), text= f"For {ctx.author.global_name}")
         
+        channel = self.client.get_channel(ctx.channel)
+
 
 class Inventory(commands.Cog):
     
@@ -256,36 +290,13 @@ class Backpack(commands.Cog):
     @commands.group()
     async def backpack(self, ctx):
         if ctx.invoked_subcommand is None:
-            embed = discord.Embed(
-                title=f"{ctx.author.global_name}'s Backpack",
-                description="Here you can view all items in your backpack. use `a!backpack add <item_name>` to add it to your backpack or if you want to remove it, then use `a!backpack remove <item_name>` to remove it.",
-                color= 0xaa5bfc,
-                timestamp=datetime.datetime.utcnow() 
-            )
-
             users = await get_inventory_data()
-            user = ctx.author
-
-            backpack_items = ""
             try:
-                for items in users[str(user.id)]["Backpack"]:
-                    if items["amount"] <= 0:
-                        pass
-                    else:
-                        backpack_items = backpack_items + f"{items['emoji']} | {items['item']} x{items['amount']}\n"
-                        continue
+                Inventory = users[str(ctx.author.id)]["Backpack"]
             except:
-                pass
+                Inventory = []
 
-            if backpack_items == "":
-                backpack_items = "*No items in your backpack*"
-
-            embed.add_field(name="Backpack", value=backpack_items)
-
-            embed.add_field(name="\n", value="\n", inline=False)
-            embed.set_footer(icon_url=(user.display_avatar), text=f"For {ctx.author.global_name}")
-
-            await ctx.send(embed=embed)
+            await util2.Backpack(ctx, Inventory).send()
 
     @backpack.command()
     async def add(self, ctx,*, item_name):
@@ -323,5 +334,3 @@ async def setup(client:commands.Bot) -> None:
    await client.add_cog(Scroll(client))
    await client.add_cog(Inventory(client))
    await client.add_cog(Backpack(client))
-
-
