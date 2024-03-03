@@ -4,7 +4,9 @@
   "description": "A Discord Bot developed using [discord.py](https://discordpy.readthedocs.io/en/stable/).",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
