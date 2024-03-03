@@ -13,7 +13,7 @@
     "comma-dangle": ["error", "always-multiline"],
     "comma-spacing": "error",
     "comma-style": "error",
-    "curly": ["error", "multi-line", "consistent"],
+    "curly": ["error", "allowSingleLine"],
     "dot-location": ["error", "property"],
     "handle-callback-err": "off",
     "indent": ["error", 2],
