@@ -13,7 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.4.0",
+    "mongoose": "^8.2.1",
+    "pokemontcgsdk": "^2.0.0"
   },
   "devDependencies": {
     "eslint": "^8.57.0"
