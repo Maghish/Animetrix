@@ -1,10 +1,9 @@
 # Animetrix
 
-A Discord Bot developed using [discord.py](https://discordpy.readthedocs.io/en/stable/). 
+A bot made for Pokemon TCG players, where people can collect, trade and battle with other players, made with [Discord.js](https://discord.js.org/)
+and [MongoDB](https://www.mongodb.co) as the database.
 
-## What is this bot?
-
-This bot is inspired by anime. This has scrolls/fruits that you can consume and fight npcs and gain exp and level up your scroll/fruit and get coins and buy more scrolls/fruits. 
-This bot is currently shutdown by the owner. This repo is also archived for later use of the code.
-
-
+<div align="left">
+  <img alt="NPM Version" src="https://img.shields.io/npm/v/discord.js">
+  <img alt="Node Current" src="https://img.shields.io/node/v/discord.js">
+</div>
