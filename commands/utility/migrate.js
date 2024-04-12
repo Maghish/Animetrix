@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { getCardsThroughSet } = require("../../functions/migrateDB");
+const CardModel = require("../../models/cardModel");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,9 +16,16 @@ module.exports = {
   async execute(interaction) {
     const set = interaction.options.getString("set");
 
-    const res = await getCardsThroughSet(set);
-    console.log(res.data.length);
+    await interaction.reply(`Migrating ${set}`);
 
-    await interaction.reply(`Migrating ${res.data[0].name}`);
+    const res = await getCardsThroughSet(set);
+
+    res.data.forEach(async (card) => {
+      const newCard = new CardModel({
+        
+      });
+
+      const card = await newCard.save();
+    })
   },
 };
