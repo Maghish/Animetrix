@@ -122,6 +122,24 @@ async function migrate(req, res) {
   }
 }
 
+async function getCard(req, res) {
+  try {
+    const { cardName } = req.body;
+
+    const allCards = await CardModel.find({ name: cardName })
+
+    if (allCards && allCards.length > 0) { 
+      return res.status(200).json({ message: "Success", card: allCards });
+    }
+
+    return res.status(400).json({ message: "Not found" })
+    
+  } catch (error) {
+    return res.status(400).json({ message: error })
+  }
+}
+
 module.exports = {
   migrate,
+  getCard
 };
