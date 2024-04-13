@@ -1,9 +1,8 @@
 const express = require("express");
+const migrate = require("../controllers/api.controller");
 
 const router = express.Router();
 
-router.get("/", function (req, res) {
-  res.status(200).json("Hello")
-})
+router.post("/migrate", migrate)
 
 module.exports = router;
