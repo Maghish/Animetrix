@@ -3,9 +3,6 @@ const path = require("node:path");
 const { Client, Events, GatewayIntentBits, Collection } = require("discord.js");
 const dotenv = require("dotenv");
 
-const keepAlive = require("./server.js");
-keepAlive();
-
 dotenv.config();
 
 const token = process.env.TOKEN;
