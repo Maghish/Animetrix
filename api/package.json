@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm ci",
+    "dev": "nodemon server.js",
     "start": "node server.js"
   },
   "keywords": [],
@@ -16,5 +17,8 @@
     "express": "^4.19.2",
     "mongoose": "^8.3.1",
     "pokemontcgsdk": "^2.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
