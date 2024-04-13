@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const mongoose = require("mongoose");
 
 dotenv.config();
 
@@ -15,6 +16,9 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "Hello" });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("listening on port " + process.env.PORT);
-});
+mongoose.connect(process.env.MONGOURI).then(() => {
+  console.log("Connected to MongoDB Successfully");
+  app.listen(process.env.PORT, () => {
+    console.log("Listening on port " + process.env.PORT);
+  });
+})
