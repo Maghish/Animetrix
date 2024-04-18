@@ -1,6 +1,6 @@
 const pokemon = require("pokemontcgsdk");
 const dotenv = require("dotenv");
-const CardModel = require("../models/cardModel");
+const CardModel = require("../models/card.model");
 
 dotenv.config();
 
