@@ -8,8 +8,11 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      await createUser();
-      await interaction.reply("Creating user...." + interaction.user);
+      await interaction.reply("Loading...");
+
+      const result = await createUser(interaction.user.id.toString());
+
+      await interaction.editReply(result[1]);
     } catch (error) {
       await interaction.reply("Error!");
     }
