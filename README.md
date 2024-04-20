@@ -48,4 +48,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
   <img src="https://contributors-img.web.app/image?repo=StarReach/Animetrix" width=500 height=100/>
 
-**Gotta Catch em all!** 
+**Gotta Catch 'Em All!** 
