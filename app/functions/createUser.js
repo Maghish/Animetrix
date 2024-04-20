@@ -1,14 +1,16 @@
 const MoneyModel = require("../models/money.model");
 const CardListModel = require("../models/cardsList.model");
 const InvModel = require("../models/inv.model");
+const DecksListModel = require("../models/decksList.model");
 
 async function createUser(UID) {
   try {
     const userMoney = await MoneyModel.findOne({ UID: UID });
     const userCardList = await CardListModel.findOne({ UID: UID });
     const userInv = await InvModel.findOne({ UID: UID });
+    const userDecksList = await DecksListModel.findOne({ UID: UID });
 
-    if (userMoney && userCardList) {
+    if (userMoney && userCardList && userInv && userDecksList) {
       return [false, "You can only use this command once!"];
     } else {
       const newUserMoney = new MoneyModel({ UID: UID, wallet: 0 });
@@ -38,9 +40,27 @@ async function createUser(UID) {
           ],
         },
       });
+      const newDecksList = new DecksListModel({
+        UID: UID,
+        decks: [
+          // {
+          //   id: 1,
+          //   name: "Lunastone & Solrock",
+          //   description: "Psychic Deck",
+          //   cards: [1, 6, 8, 10, 7, 8, 9],
+          // },
+          // {
+          //   id: 2,
+          //   name: "Psychic Psychos",
+          //   description: "Psychic Deck",
+          //   cards: [102, 105, 6034, 1246, 3246345],
+          // },
+        ],
+      });
       await newUserMoney.save();
       await newUserCardList.save();
       await newUserInv.save();
+      await newDecksList.save();
       return [true, "You can now start your journey!"];
     }
   } catch (error) {
